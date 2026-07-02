@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Server Countdown & ARG Quest</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Đếm ngược mở cửa server Minecraft. Tham gia ARG Quest giải mã bí ẩn nhận quà độc quyền và Discord Invite!">
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    
+    <!-- Google Fonts for Pixel Art Aesthetics (VT323 has excellent Vietnamese accent support) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Background Canvas for Minecraft Particles -->
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- Hidden background Creeper face Easter Egg -->
+    <div class="bg-creeper-egg" id="creeperEgg" title="???"></div>
+
+    <!-- Herobrine Ghost Eyes (Hidden by default) -->
+    <div class="herobrine-eyes" id="herobrineEyes"></div>
+
+    <!-- Advancement Toast Banner (Uses standard image asset instead of emoji) -->
+    <div class="advancement-toast" id="advancementToast">
+        <img class="toast-icon-img" src="/mc_sword.jpg" alt="Advancement">
+        <div class="toast-text">
+            <div class="toast-title">Thử Thách Hoàn Thành!</div>
+            <div class="toast-desc" id="toastDesc">Đã mở khóa một phần thời gian</div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Minecraft Title & Bouncing Splash -->
+        <header class="minecraft-header">
+            <div class="logo-container">
+                <h1 class="minecraft-title">MINE<span class="highlight">CRAFT</span></h1>
+                <h2 class="minecraft-subtitle">SERVER LAUNCH</h2>
+                <div class="splash-text" id="splashText">Loading splash...</div>
+            </div>
+        </header>
+
+        <!-- Main Countdown Panel -->
+        <main class="countdown-panel">
+            <div class="panel-header">TRẠNG THÁI KHAI THÁC DỮ LIỆU</div>
+            
+            <div class="timer-container">
+                <!-- Segment: Days -->
+                <div class="timer-segment locked" id="days-segment">
+                    <div class="timer-content-wrapper">
+                        <div class="timer-value" id="days">00</div>
+                        <div class="timer-label">Ngày</div>
+                    </div>
+                    <div class="segment-block-cover" id="days-cover" title="Bị khóa. Nhập mã ARG để phá khối!">
+                        <div class="cover-face"></div>
+                        <div class="pixel-lock"></div>
+                    </div>
+                </div>
+                
+                <!-- Segment: Hours -->
+                <div class="timer-segment locked" id="hours-segment">
+                    <div class="timer-content-wrapper">
+                        <div class="timer-value" id="hours">00</div>
+                        <div class="timer-label">Giờ</div>
+                    </div>
+                    <div class="segment-block-cover" id="hours-cover" title="Bị khóa. Nhập mã ARG để phá khối!">
+                        <div class="cover-face"></div>
+                        <div class="pixel-lock"></div>
+                    </div>
+                </div>
+                
+                <!-- Segment: Minutes -->
+                <div class="timer-segment locked" id="minutes-segment">
+                    <div class="timer-content-wrapper">
+                        <div class="timer-value" id="minutes">00</div>
+                        <div class="timer-label">Phút</div>
+                    </div>
+                    <div class="segment-block-cover" id="minutes-cover" title="Bị khóa. Nhập mã ARG để phá khối!">
+                        <div class="cover-face"></div>
+                        <div class="pixel-lock"></div>
+                    </div>
+                </div>
+                
+                <!-- Segment: Seconds -->
+                <div class="timer-segment locked" id="seconds-segment">
+                    <div class="timer-content-wrapper">
+                        <div class="timer-value" id="seconds">00</div>
+                        <div class="timer-label">Giây</div>
+                    </div>
+                    <div class="segment-block-cover" id="seconds-cover" title="Bị khóa. Nhập mã ARG để phá khối!">
+                        <div class="cover-face"></div>
+                        <div class="pixel-lock"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Minecraft-style XP Level Bar -->
+            <div class="xp-bar-container">
+                <div class="xp-bar-bg">
+                    <div class="xp-bar-fill" id="xpFill"></div>
+                </div>
+                <div class="xp-level" id="xpLevel">0</div>
+            </div>
+        </main>
+
+        <!-- Menu Navigation & Actions -->
+        <section class="menu-actions">
+            <!-- Minecraft themed buttons -->
+            <a href="https://discord.gg/gPKg8Y7eSU" target="_blank" class="mc-btn discord-btn" id="discordBtn">
+                <svg class="discord-icon" viewBox="0 0 127.14 96.36">
+                    <path fill="currentColor" d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a77.7,77.7,0,0,0,6.63-10.85,68.43,68.43,0,0,1-10.4-5c.86-.63,1.72-1.3,2.54-2a75.7,75.7,0,0,0,72.6,0c.83.69,1.68,1.37,2.54,2a68.43,68.43,0,0,1-10.4,5,77.7,77.7,0,0,0,6.63,10.85,105.73,105.73,0,0,0,31.06-18.83C129.87,50.12,123.6,27.31,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z"/>
+                </svg>
+                <span>Tham Gia Discord</span>
+            </a>
+        </section>
+
+        <!-- Easter Egg Interactive Section -->
+        <section class="easter-egg-section">
+            <div class="interactive-block-container">
+                <div class="block-label" id="blockLabel">SNEAK PEEK BLOCK</div>
+                <!-- Mineable block - updated to hold 4 side faces for a full 3D rendering -->
+                <div class="mineable-block" id="mineableBlock">
+                    <div class="block-face front" id="blockFront"></div>
+                    <div class="block-face top"></div>
+                    <div class="block-face left"></div>
+                    <div class="block-face right"></div>
+                    <div class="crack-overlay" id="crackOverlay"></div>
+                </div>
+                <div class="click-hint" id="clickHint">Mẹo: Click để đập khối! (0/10)</div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>Hanoi/Jakarta GMT+7 - Launching on July 10, 2026 at 21:00</p>
+            <p style="font-size: 0.8rem; margin-top: 4px; color: #666;">Nhấn phím [T] hoặc [/] để mở Minecraft Chat Console và giải mã ARG</p>
+        </footer>
+    </div>
+
+    <!-- Minecraft Style Chat Console -->
+    <div class="minecraft-chat-container" id="chatContainer">
+        <div class="chat-history" id="chatHistory">
+            <div class="chat-line system">[Hệ Thống] Hãy phối hợp cùng các thành viên Discord để giải mã 4 mảnh thời gian bằng các lệnh chat!</div>
+            <div class="chat-line system">Sử dụng: /unlock &lt;days|hours|minutes|seconds&gt; &lt;mã_số&gt;</div>
+        </div>
+        <div class="chat-input-row">
+            <span class="chat-prefix">&gt;</span>
+            <input type="text" class="chat-input" id="chatInput" placeholder="Nhập lệnh... (nhấn Enter để gửi)" maxlength="100" autocomplete="off" />
+        </div>
+    </div>
+
+    <!-- Chest Inventory GUI Modal -->
+    <div class="modal-overlay" id="chestModal">
+        <div class="chest-gui">
+            <div class="chest-header">
+                <span class="chest-title">Rương Bật Mí (Sneak Peek Chest)</span>
+                <button class="chest-close-btn" id="closeChestBtn">X</button>
+            </div>
+            <div class="chest-grid" id="chestGrid">
+                <!-- 27 slots generated dynamically in JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Teaser Preview Modal -->
+    <div class="modal-overlay" id="teaserModal">
+        <div class="teaser-content">
+            <div class="teaser-header">
+                <span class="teaser-title" id="teaserTitle">Teaser</span>
+                <button class="teaser-close-btn" id="closeTeaserBtn">X</button>
+            </div>
+            <div class="teaser-body">
+                <img id="teaserImage" src="" alt="Teaser Preview" class="teaser-img">
+                <div id="teaserText" class="teaser-text"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>

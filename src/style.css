@@ -1,0 +1,1035 @@
+/* Global Reset & Base Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+body {
+    background-color: #0b0e14;
+    background-image: radial-gradient(circle at center, #1b2436 0%, #080a0f 100%);
+    color: #ffffff;
+    font-family: 'VT323', monospace;
+    font-size: 22px; /* Increased font-size slightly for Vietnamese VT323 readability */
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Background Particle Canvas */
+#particleCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* App Container */
+.app-container {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    z-index: 10;
+    transition: filter 0.1s ease;
+}
+
+/* Header & Logo */
+.minecraft-header {
+    text-align: center;
+    margin-bottom: 10px;
+    position: relative;
+    width: 100%;
+}
+
+.logo-container {
+    position: relative;
+    display: inline-block;
+    padding: 10px 20px;
+}
+
+.minecraft-title {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 2.2rem;
+    color: #dedede;
+    letter-spacing: -2px;
+    text-shadow: 
+        -3px -3px 0px #3c3c3c,  
+         3px -3px 0px #3c3c3c,  
+        -3px  3px 0px #3c3c3c,  
+         3px  3px 0px #3c3c3c,
+        -5px -5px 0px #000,
+         5px -5px 0px #000,
+        -5px  5px 0px #000,
+         5px  5px 0px #000,
+         0px  7px 0px #000,
+         7px  7px 5px rgba(0,0,0,0.5);
+    transform: skewX(-5deg);
+}
+
+.minecraft-title .highlight {
+    color: #4cdb4c;
+    text-shadow: 
+        -3px -3px 0px #1e5a1e,  
+         3px -3px 0px #1e5a1e,  
+        -3px  3px 0px #1e5a1e,  
+         3px  3px 0px #1e5a1e,
+        -5px -5px 0px #000,
+         5px -5px 0px #000,
+        -5px  5px 0px #000,
+         5px  5px 0px #000,
+         0px  7px 0px #000,
+         7px  7px 5px rgba(0,0,0,0.5);
+}
+
+.minecraft-subtitle {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 1.1rem;
+    color: #ffaa00;
+    margin-top: 15px;
+    letter-spacing: 1px;
+    text-shadow: 2px 2px 0px #552200, 3px 3px 0px #000;
+}
+
+/* Yellow Splash Text - Changed to VT323 for full Vietnamese accent support */
+.splash-text {
+    position: absolute;
+    bottom: -18px;
+    right: -30px;
+    font-family: 'VT323', monospace;
+    font-size: 1.45rem;
+    font-weight: bold;
+    color: #ffff55;
+    text-shadow: 2px 2px 0px #555500, 3px 3px 2px rgba(0,0,0,0.6);
+    transform: rotate(-12deg);
+    animation: splashPulse 0.5s infinite alternate ease-in-out;
+    white-space: nowrap;
+    z-index: 15;
+}
+
+@keyframes splashPulse {
+    0% {
+        transform: rotate(-12deg) scale(0.92);
+    }
+    100% {
+        transform: rotate(-12deg) scale(1.08);
+    }
+}
+
+/* Minecraft Container Panel styling */
+.countdown-panel {
+    width: 100%;
+    background-color: #c6c6c6;
+    border: 4px solid #555555;
+    border-top-color: #ffffff;
+    border-left-color: #ffffff;
+    outline: 4px solid #000000;
+    padding: 24px 16px;
+    box-shadow: inset -4px -4px 0px #8b8b8b, inset 4px 4px 0px #dbdbdb;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+}
+
+/* Changed to VT323 for full Vietnamese support */
+.panel-header {
+    font-family: 'VT323', monospace;
+    font-size: 1.65rem;
+    font-weight: bold;
+    color: #373737;
+    text-shadow: 1px 1px 0px #ffffff;
+    text-align: center;
+    letter-spacing: 0.5px;
+}
+
+/* Timer Grids */
+.timer-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    width: 100%;
+}
+
+.timer-segment {
+    background-color: #2e2e2e;
+    border: 4px solid #ffffff;
+    border-top-color: #373737;
+    border-left-color: #373737;
+    padding: 12px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset -2px -2px 0px #555555, inset 2px 2px 0px #1a1a1a;
+    position: relative;
+    overflow: hidden;
+    min-height: 95px;
+}
+
+.timer-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    z-index: 2;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* Completely hide numbers under covers when segment is locked */
+.timer-segment.locked .timer-content-wrapper {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.timer-value {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 1.4rem;
+    color: #ff5555;
+    text-shadow: 2px 2px 0px #550000;
+    margin-bottom: 6px;
+}
+
+.timer-label {
+    font-family: 'VT323', monospace;
+    font-size: 1.3rem;
+    color: #aaaaaa;
+    text-transform: uppercase;
+}
+
+/* Segment Physical Block Cover */
+.segment-block-cover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    cursor: pointer;
+    background-color: #211510;
+    background-image: url('/mc_obsidian.jpg');
+    background-size: cover;
+    image-rendering: pixelated;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 3px solid #000000;
+    transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045);
+    box-shadow: inset -3px -3px 0 rgba(0,0,0,0.5), inset 3px 3px 0 rgba(255,255,255,0.15);
+}
+
+/* Tint cover blocks to look different */
+#days-cover {
+    filter: hue-rotate(185deg) brightness(1.35) contrast(1.1); /* Blue/iron lock */
+}
+#hours-cover {
+    filter: hue-rotate(60deg) brightness(1.4) contrast(1.15); /* Gold lock */
+}
+#minutes-cover {
+    filter: hue-rotate(300deg) brightness(1.3) contrast(1.2); /* Redstone lock */
+}
+#seconds-cover {
+    /* Obsidian dark cover (default) */
+}
+
+/* Pure CSS Padlock - Replaces Lock Emoji */
+.pixel-lock {
+    width: 20px;
+    height: 16px;
+    background-color: #e6c300;
+    border-bottom: 3px solid #b09400;
+    border-right: 3px solid #b09400;
+    position: relative;
+    z-index: 12;
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+    animation: lockPulse 2s infinite ease-in-out;
+}
+
+.pixel-lock::before {
+    content: '';
+    position: absolute;
+    top: -9px;
+    left: 3px;
+    width: 10px;
+    height: 9px;
+    border: 3px solid #c0c0c0;
+    border-bottom: none;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+
+.pixel-lock::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 8px;
+    width: 2px;
+    height: 4px;
+    background-color: #000000;
+}
+
+@keyframes lockPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+
+/* Shaking animation when code is processing */
+.segment-block-cover.shaking {
+    animation: coverShake 0.08s infinite;
+}
+
+@keyframes coverShake {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(-3px, 2px); }
+    50% { transform: translate(2px, -3px); }
+    75% { transform: translate(-2px, -2px); }
+}
+
+/* When the block breaks */
+.segment-block-cover.broken {
+    opacity: 0;
+    transform: scale(0.01) rotate(45deg);
+    pointer-events: none;
+}
+
+/* XP Bar Component */
+.xp-bar-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-top: 5px;
+}
+
+.xp-bar-bg {
+    width: 100%;
+    height: 12px;
+    background-color: #1e1e1e;
+    border: 2px solid #555555;
+    outline: 2px solid #000000;
+    position: relative;
+    overflow: hidden;
+}
+
+.xp-bar-fill {
+    height: 100%;
+    width: 0%;
+    background-color: #55ff55;
+    background-image: linear-gradient(to bottom, #c5ffc5 0%, #55ff55 50%, #00aa00 100%);
+    transition: width 0.5s ease-out;
+}
+
+.xp-level {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.95rem;
+    color: #55ff55;
+    text-shadow: 
+        -1px -1px 0px #000,  
+         1px -1px 0px #000,  
+        -1px  1px 0px #000,  
+         1px  1px 0px #000,
+         0px  2px 2px rgba(0,0,0,0.8);
+}
+
+/* Minecraft Button Style - Changed to VT323 for full Vietnamese support */
+.mc-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    max-width: 320px;
+    height: 52px;
+    background-color: #9e9e9e;
+    border: 4px solid #565656;
+    border-top-color: #ffffff;
+    border-left-color: #ffffff;
+    outline: 4px solid #000000;
+    box-shadow: inset -4px -4px 0px #565656, inset 4px 4px 0px #dbdbdb;
+    color: #e0e0e0;
+    font-family: 'VT323', monospace;
+    font-size: 1.55rem;
+    font-weight: bold;
+    text-decoration: none;
+    text-shadow: 2px 2px 0px #3f3f3f;
+    cursor: pointer;
+    transition: all 0.1s;
+    text-align: center;
+}
+
+.mc-btn:hover {
+    background-color: #5b87e7;
+    border-color: #2c4b93;
+    border-top-color: #8faeff;
+    border-left-color: #8faeff;
+    box-shadow: inset -4px -4px 0px #2c4b93, inset 4px 4px 0px #a4beff;
+    color: #ffff55;
+    text-shadow: 2px 2px 0px #555500;
+}
+
+.mc-btn:active {
+    transform: translateY(2px);
+    box-shadow: inset 4px 4px 0px #2c4b93, inset -4px -4px 0px #a4beff;
+}
+
+.menu-actions {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.discord-icon {
+    width: 26px;
+    height: 26px;
+}
+
+/* Easter Egg Mining Block */
+.easter-egg-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.interactive-block-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    perspective: 800px;
+}
+
+.block-label {
+    font-family: 'VT323', monospace;
+    font-size: 1.35rem;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 2px 2px 0px #000;
+    letter-spacing: 0.5px;
+}
+
+/* 3D Minecraft Block CSS */
+.mineable-block {
+    width: 100px;
+    height: 100px;
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateX(-20deg) rotateY(35deg);
+    cursor: pointer;
+    transition: transform 0.1s ease;
+    animation: floatBlock 4s infinite alternate ease-in-out;
+}
+
+.mineable-block:hover {
+    transform: rotateX(-20deg) rotateY(35deg) scale(1.08);
+}
+
+.mineable-block:active {
+    transform: rotateX(-20deg) rotateY(35deg) scale(0.95);
+    animation-play-state: paused;
+}
+
+.block-face {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border: 1px solid rgba(0,0,0,0.2);
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+    background-size: cover;
+    image-rendering: pixelated;
+}
+
+/* 3D Cube Faces transforms (Corrected Left/Right positioning for 3D visibility) */
+.block-face.front {
+    transform: rotateY(0deg) translateZ(50px);
+}
+.block-face.top {
+    transform: rotateX(90deg) translateZ(50px);
+    filter: brightness(1.25);
+}
+.block-face.left {
+    transform: rotateY(-90deg) translateZ(50px);
+    filter: brightness(0.85);
+}
+.block-face.right {
+    transform: rotateY(90deg) translateZ(50px);
+    filter: brightness(0.7);
+}
+
+/* Obsidian texture map values */
+.mineable-block .front { background-image: url('/mc_obsidian.jpg'); }
+.mineable-block .top { background-image: url('/mc_obsidian.jpg'); }
+.mineable-block .left { background-image: url('/mc_obsidian.jpg'); }
+.mineable-block .right { background-image: url('/mc_obsidian.jpg'); }
+
+/* Chest block textures */
+.mineable-block.chest-block .front { background-image: url('/mc_chest.jpg'); }
+.mineable-block.chest-block .top { background-image: url('/mc_chest.jpg'); filter: brightness(1.1); }
+.mineable-block.chest-block .left { background-image: url('/mc_chest.jpg'); filter: brightness(0.9); }
+.mineable-block.chest-block .right { background-image: url('/mc_chest.jpg'); filter: brightness(0.7); }
+
+/* Crack overlay for mining progress */
+.crack-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    transform: translateZ(50.5px);
+    background-size: 100% 100%;
+    image-rendering: pixelated;
+    opacity: 0.9;
+}
+
+/* Floating animation for block */
+@keyframes floatBlock {
+    0% {
+        transform: rotateX(-20deg) rotateY(35deg) translateY(0px);
+    }
+    100% {
+        transform: rotateX(-20deg) rotateY(35deg) translateY(-10px);
+    }
+}
+
+.click-hint {
+    font-size: 1.15rem;
+    color: #ffaa00;
+    text-shadow: 1px 1px 0px #000;
+}
+
+/* Minecraft Chat Console Bar */
+.minecraft-chat-container {
+    position: fixed;
+    bottom: -300px;
+    left: 10px;
+    width: calc(100% - 20px);
+    max-width: 500px;
+    background-color: rgba(0, 0, 0, 0.75);
+    border: 3px solid #373737;
+    border-top-color: #555555;
+    border-left-color: #555555;
+    padding: 8px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-family: 'VT323', monospace;
+    font-size: 1.25rem;
+    transition: bottom 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
+    box-shadow: 0px 5px 15px rgba(0,0,0,0.5);
+}
+
+.minecraft-chat-container.active {
+    bottom: 10px;
+}
+
+.chat-history {
+    height: 120px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-right: 4px;
+    word-break: break-all;
+}
+
+.chat-history::-webkit-scrollbar {
+    width: 6px;
+}
+.chat-history::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.3);
+}
+.chat-history::-webkit-scrollbar-thumb {
+    background: #555555;
+    border: 1px solid #000;
+}
+
+.chat-line {
+    color: #ffffff;
+    text-shadow: 1px 1px 0px #000000;
+}
+
+.chat-line.system {
+    color: #aaaaff;
+}
+
+.chat-line.success {
+    color: #55ff55;
+}
+
+.chat-line.error {
+    color: #ff5555;
+}
+
+.chat-line.info {
+    color: #ffff55;
+}
+
+.chat-input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: rgba(0, 0, 0, 0.4);
+    border: 2px solid #555555;
+    padding: 4px 8px;
+}
+
+.chat-prefix {
+    color: #ffff55;
+    font-weight: bold;
+    text-shadow: 1px 1px 0px #000;
+}
+
+.chat-input {
+    background: none;
+    border: none;
+    outline: none;
+    color: #ffffff;
+    font-family: 'VT323', monospace;
+    font-size: 1.3rem;
+    flex: 1;
+    text-shadow: 1px 1px 0px #000;
+}
+
+/* Hidden Background Creeper Face Easter Egg */
+.bg-creeper-egg {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 320px;
+    height: 320px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8"><rect x="0" y="0" width="8" height="8" fill="none"/><rect x="0" y="0" width="8" height="8" fill="%234cdb4c" opacity="0.04"/><rect x="1" y="1" width="2" height="2" fill="%23000000" opacity="0.05"/><rect x="5" y="1" width="2" height="2" fill="%23000000" opacity="0.05"/><rect x="3" y="3" width="2" height="2" fill="%23000000" opacity="0.05"/><rect x="2" y="5" width="4" height="3" fill="%23000000" opacity="0.05"/><rect x="2" y="7" width="1" height="1" fill="none"/><rect x="5" y="7" width="1" height="1" fill="none"/></svg>');
+    background-size: contain;
+    image-rendering: pixelated;
+    pointer-events: auto; /* trigger hover mouseenter */
+    z-index: 0;
+    cursor: default;
+    transition: opacity 0.5s ease;
+}
+
+.bg-creeper-egg:hover {
+    /* Slightly glows greener when hovered */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8"><rect x="0" y="0" width="8" height="8" fill="none"/><rect x="0" y="0" width="8" height="8" fill="%234cdb4c" opacity="0.08"/><rect x="1" y="1" width="2" height="2" fill="%23000000" opacity="0.1"/><rect x="5" y="1" width="2" height="2" fill="%23000000" opacity="0.1"/><rect x="3" y="3" width="2" height="2" fill="%23000000" opacity="0.1"/><rect x="2" y="5" width="4" height="3" fill="%23000000" opacity="0.1"/><rect x="2" y="7" width="1" height="1" fill="none"/><rect x="5" y="7" width="1" height="1" fill="none"/></svg>');
+}
+
+/* Advancement Toast Notification Banner */
+.advancement-toast {
+    position: fixed;
+    top: -100px;
+    right: 20px;
+    width: 290px;
+    background-color: #211510;
+    background-image: linear-gradient(135deg, #2c1b15 0%, #170e0a 100%);
+    border: 3px solid #ffa800;
+    border-radius: 4px;
+    padding: 10px 14px;
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0px 5px 15px rgba(0,0,0,0.6), inset 0px 0px 8px rgba(0,0,0,0.8);
+    transition: top 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+.advancement-toast.active {
+    top: 20px;
+}
+
+.toast-icon-img {
+    width: 32px;
+    height: 32px;
+    image-rendering: pixelated;
+    mix-blend-mode: screen;
+    filter: drop-shadow(1px 1px 0px rgba(0,0,0,0.8));
+}
+
+.toast-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.toast-title {
+    font-family: 'VT323', monospace;
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #ffa800;
+    text-transform: uppercase;
+}
+
+.toast-desc {
+    font-family: 'VT323', monospace;
+    font-size: 1.4rem;
+    color: #ffffff;
+    text-shadow: 1px 1px 0px #000;
+    margin-top: 2px;
+}
+
+/* Modals General Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+/* Minecraft Chest GUI Panel */
+.chest-gui {
+    background-color: #c6c6c6;
+    border: 4px solid #555555;
+    border-top-color: #ffffff;
+    border-left-color: #ffffff;
+    outline: 4px solid #000000;
+    box-shadow: inset -4px -4px 0px #8b8b8b, inset 4px 4px 0px #dbdbdb;
+    padding: 16px;
+    width: 100%;
+    max-width: 440px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    animation: openContainer 0.15s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+@keyframes openContainer {
+    from {
+        transform: scale(0.85);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.chest-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #555555;
+    padding-bottom: 8px;
+}
+
+.chest-title {
+    font-family: 'VT323', monospace;
+    font-size: 1.45rem;
+    font-weight: bold;
+    color: #404040;
+    text-shadow: 1px 1px 0px #ffffff;
+}
+
+.chest-close-btn, .teaser-close-btn {
+    background-color: #8b8b8b;
+    border: 2px solid #555555;
+    border-top-color: #ffffff;
+    border-left-color: #ffffff;
+    outline: 2px solid #000000;
+    color: #e0e0e0;
+    font-family: 'VT323', monospace;
+    font-size: 1.35rem;
+    font-weight: bold;
+    width: 26px;
+    height: 26px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.chest-close-btn:hover, .teaser-close-btn:hover {
+    background-color: #ff5555;
+    color: #ffffff;
+    border-color: #550000;
+    border-top-color: #ffaaaa;
+    border-left-color: #ffaaaa;
+}
+
+/* 9x3 Slot Grid */
+.chest-grid {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 4px;
+    background-color: #8b8b8b;
+    border: 3px solid #373737;
+    border-bottom-color: #ffffff;
+    border-right-color: #ffffff;
+    padding: 6px;
+    box-shadow: inset 2px 2px 0px #2e2e2e, inset -2px -2px 0px #555555;
+}
+
+/* Individual Slot styling */
+.chest-slot {
+    width: 40px;
+    height: 40px;
+    background-color: #8b8b8b;
+    border: 3px solid #373737;
+    border-bottom-color: #ffffff;
+    border-right-color: #ffffff;
+    box-shadow: inset 1px 1px 0px #1a1a1a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+}
+
+.chest-slot:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    box-shadow: inset 0 0 4px rgba(255, 255, 255, 0.5);
+}
+
+.chest-slot.has-item {
+    background-color: #1a1a1a;
+    box-shadow: inset 2px 2px 0px #0c0c0c;
+}
+
+.chest-slot img {
+    width: 30px;
+    height: 30px;
+    image-rendering: pixelated;
+    mix-blend-mode: screen;
+    filter: drop-shadow(1px 1px 0px rgba(0,0,0,0.85));
+    transition: transform 0.05s;
+}
+
+.chest-slot:active img {
+    transform: scale(0.9);
+}
+
+/* Enchanted item glowing effect */
+.chest-slot.has-item.enchanted-glow img {
+    animation: enchantedPurpleItemGlow 2.5s infinite alternate ease-in-out;
+}
+
+@keyframes enchantedPurpleItemGlow {
+    0% {
+        filter: drop-shadow(1px 1px 0px rgba(0,0,0,0.85)) drop-shadow(0 0 1px rgba(180, 50, 255, 0.4));
+    }
+    100% {
+        filter: drop-shadow(1px 1px 0px rgba(0,0,0,0.85)) drop-shadow(0 0 5px rgba(200, 100, 255, 0.9));
+    }
+}
+
+/* Custom Tooltip mimicking Minecraft style */
+.mc-tooltip {
+    position: fixed;
+    pointer-events: none;
+    z-index: 2000;
+    background-color: rgba(16, 1, 16, 0.93);
+    border: 2px solid #2d0b5e;
+    box-shadow: 0 0 0 2px #100110;
+    padding: 8px 12px;
+    border-radius: 2px;
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    font-family: 'VT323', monospace;
+    max-width: 250px;
+}
+
+.tooltip-title {
+    font-family: 'VT323', monospace;
+    font-size: 1.35rem;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.tooltip-title.rare {
+    color: #ffff55; /* Gold rare text */
+}
+
+.tooltip-title.epic {
+    color: #d373ff; /* Purple rare text */
+}
+
+.tooltip-description {
+    font-size: 1.15rem;
+    color: #aaaaaa;
+    line-height: 1.25;
+}
+
+.tooltip-lore {
+    font-size: 1.1rem;
+    color: #55ffff; /* Cyan lore */
+    font-style: italic;
+}
+
+.tooltip-hint {
+    font-size: 1rem;
+    color: #ff5555; /* Red hint */
+}
+
+/* Teaser Modal Box */
+.teaser-content {
+    background-color: #c6c6c6;
+    border: 4px solid #555555;
+    border-top-color: #ffffff;
+    border-left-color: #ffffff;
+    outline: 4px solid #000000;
+    box-shadow: inset -4px -4px 0px #8b8b8b, inset 4px 4px 0px #dbdbdb;
+    padding: 16px;
+    width: 90%;
+    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    animation: openContainer 0.15s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+.teaser-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #555555;
+    padding-bottom: 8px;
+}
+
+.teaser-title {
+    font-family: 'VT323', monospace;
+    font-size: 1.45rem;
+    font-weight: bold;
+    color: #404040;
+    text-shadow: 1px 1px 0px #ffffff;
+}
+
+.teaser-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+}
+
+.teaser-img {
+    width: 100%;
+    max-height: 250px;
+    object-fit: cover;
+    border: 3px solid #373737;
+    border-bottom-color: #ffffff;
+    border-right-color: #ffffff;
+    box-shadow: inset 1px 1px 0px #1a1a1a;
+}
+
+.teaser-text {
+    font-size: 1.35rem;
+    color: #373737;
+    text-shadow: 1px 1px 0px #ffffff;
+    text-align: center;
+    line-height: 1.3;
+}
+
+/* Herobrine Scare Eyes (Secret Background Glow) */
+.herobrine-eyes {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 180px;
+    height: 40px;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.herobrine-eyes::before, .herobrine-eyes::after {
+    content: '';
+    display: block;
+    width: 32px;
+    height: 16px;
+    background-color: #ffffff;
+    box-shadow: 0 0 15px #ffffff, 0 0 35px #a3a3ff;
+}
+
+.herobrine-eyes.visible {
+    opacity: 0.45;
+}
+
+/* Jumpscare Glitch Class for Body */
+body.glitch-scare {
+    animation: bodyShake 0.15s infinite, flashRed 0.3s infinite;
+}
+
+body.glitch-scare .app-container {
+    filter: invert(1) hue-rotate(180deg);
+}
+
+@keyframes bodyShake {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    20% { transform: translate(-8px, 5px) scale(1.02); }
+    40% { transform: translate(6px, -7px) scale(0.98); }
+    60% { transform: translate(-5px, -3px) scale(1.01); }
+    80% { transform: translate(7px, 6px) scale(0.99); }
+}
+
+@keyframes flashRed {
+    0%, 100% { background-color: #0b0e14; }
+    50% { background-color: #3d0000; }
+}
+
+/* Footer style */
+.app-footer {
+    width: 100%;
+    text-align: center;
+    color: #8b8b8b;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+    text-shadow: 1px 1px 0px #000;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 480px) {
+    .minecraft-title {
+        font-size: 1.6rem;
+    }
+    .splash-text {
+        font-size: 1.15rem;
+        right: -10px;
+        bottom: -20px;
+    }
+    .timer-value {
+        font-size: 1.1rem;
+    }
+    .timer-label {
+        font-size: 0.9rem;
+    }
+    .chest-gui {
+        max-width: 360px;
+    }
+    .chest-slot {
+        width: 32px;
+        height: 32px;
+    }
+    .chest-slot img {
+        width: 22px;
+        height: 22px;
+    }
+}
