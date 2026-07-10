@@ -12,6 +12,8 @@ const soundFiles = {
     levelUp: '/sounds/levelup.ogg',
     orb: '/sounds/orb.ogg',
     creeperFuse: '/sounds/fuse.ogg',
+    challengeComplete: '/sounds/challenge_complete.ogg',
+    dragonDeath: '/sounds/dragon_death.ogg',
 };
 
 // Web Audio API context, kept only for the custom Herobrine jumpscare rumble
@@ -153,21 +155,29 @@ const splashTexts = [
 ];
 
 // Target opening date
-const targetDate = new Date("2026-07-10T21:00:00+07:00").getTime();
+const targetDate = new Date("2026-07-11T19:30:00+07:00").getTime();
 const startDate = new Date("2026-07-01T21:00:00+07:00").getTime();
 const totalDuration = targetDate - startDate;
 
-// ARG Secret Codes
+// Native browser async SHA-256 hashing
+async function sha256(message) {
+    const msgUint8 = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Hashed ARG Secret Codes (SHA-256)
 const codes = {
-    days: "MINECOW_START_2026",
-    hours: "NETHER_GATEWAY_88",
-    minutes: "REDSTONE_LOGIC_99",
-    seconds: "HEROBRINE_IS_REAL"
+    days: "3e2fb24aa7cd8493f3da7a60a47498101af4384061b1c7a2e68c41d36bb7bfcd",    // MINECOW_START_2026
+    hours: "b538830b4c60cab60569c5a47e6e1733e69f745d2294b45414073d4f91c053c2",   // 35791320242832374042475054
+    minutes: "b1837379ef38b51bb60e44a2261965c025186b84c717fc88fa05ee22fb5ca735", // z3xwCzhplqk
+    seconds: "116f73eeef6adac652994dac9e263724caef13db12d120a0c7ada855245fb05d"  // 134789
 };
 
 // Unlock States (loaded from localStorage)
 let unlockStates = {
-    days: localStorage.getItem("mc_days_unlocked") === "true",
+    days: true, // Always true (glitched launch day today)
     hours: localStorage.getItem("mc_hours_unlocked") === "true",
     minutes: localStorage.getItem("mc_minutes_unlocked") === "true",
     seconds: localStorage.getItem("mc_seconds_unlocked") === "true"
@@ -205,7 +215,13 @@ function updateCountdown() {
     // Handle locked/unlocked covers
     if (unlockStates.days) {
         daysSeg.classList.remove("locked");
-        daysVal.innerText = String(days).padStart(2, '0');
+        daysVal.classList.add("glitch-days");
+        const glitchChars = ["00", "0ø", "ø0", "0?", "?0", "Ø0", "0Ø", "0X", "X0", "§§", "??", "øø", "ØØ"];
+        if (Math.random() < 0.15) {
+            daysVal.innerText = glitchChars[Math.floor(Math.random() * glitchChars.length)];
+        } else {
+            daysVal.innerText = "00";
+        }
         const cover = document.getElementById("days-cover");
         if (cover && !cover.classList.contains("broken")) cover.classList.add("broken");
     } else {
@@ -337,8 +353,6 @@ class Particle {
         if (this.type === 'portal') {
             ctx.translate(this.x, this.y);
             ctx.rotate(this.angle);
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = this.color;
             ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
         } else if (this.type === 'happy') {
             ctx.fillRect(this.x - this.size/2, this.y - this.size/6, this.size, this.size/3);
@@ -463,12 +477,12 @@ function animate() {
 animate();
 
 // Advancement Toast Notification trigger
-function showAdvancement(descText) {
+function showAdvancement(descText, soundKey = 'levelUp') {
     const toast = document.getElementById("advancementToast");
     const desc = document.getElementById("toastDesc");
     
     desc.innerText = descText;
-    playLevelUpSound();
+    playSound(soundKey, { volume: 0.55 });
     
     toast.classList.add("active");
     
@@ -705,18 +719,151 @@ function animateSegmentBreak(segment) {
         }
 
         // Show advancement toast
-        playSound('orb', { volume: 0.4, rateJitter: 0.15 });
-        showAdvancement(`Đã Giải Mã Thành Công: ${segment.toUpperCase()}!`);
-        writeToChatHistory(`[Server] Phân khúc '${segment.toUpperCase()}' đã được phá vỡ thành công!`, "success");
-
         unlockStates[segment] = true;
         localStorage.setItem(`mc_${segment}_unlocked`, "true");
         updateCountdown();
+
+        const allSolved = unlockStates.hours && unlockStates.minutes && unlockStates.seconds;
+
+        if (allSolved) {
+            showAdvancement("THÀNH TỰU TỐI CAO: GIẢI MÃ TOÀN BỘ THỜI GIAN!", 'dragonDeath');
+            writeToChatHistory(`[Server] 🎉 TẤT CẢ CÁC MẢNH GHÉP ĐÃ ĐƯỢC GIẢI MÃ! MÁY CHỦ SẴN SÀNG KHỞI CHẠY! 🎉`, "success");
+            sendDiscordWebhook(segment, true);
+        } else {
+            showAdvancement(`Đã Giải Mã Thành Công: ${segment.toUpperCase()}!`, 'challengeComplete');
+            writeToChatHistory(`[Server] Phân khúc '${segment.toUpperCase()}' đã được phá vỡ thành công!`, "success");
+            sendDiscordWebhook(segment, false);
+        }
     }, 500);
 }
 
+// Function to send congratulatory message to Discord Webhook
+// Function to send congratulatory message to Discord Webhook
+function sendDiscordWebhook(segment, isEpic = false) {
+    const webhookUrl = "https://discord.com/api/webhooks/1522847264995807305/13yUnTqoovGrNPZc3X0Efgl2tD_7LbuYXtLNm4Na_35U6nqc32UsT-fj0Fs6tErUrvxB";
+    
+    const segmentColors = {
+        days: 4179152,      // #3fc4d0 (Cyan)
+        hours: 16373835,    // #f9d84b (Gold)
+        minutes: 16720418,  // #ff2222 (Redstone Red)
+        seconds: 4019396    // #3d54c4 (Lapis Blue)
+    };
+
+    const titleColors = {
+        days: "💎 KIM CƯƠNG (DAYS) 💎",
+        hours: "👑 VÀNG (HOURS) 👑",
+        minutes: "🔴 ĐÁ ĐỎ (MINUTES) 🔴",
+        seconds: "🔵 LÁP LÁNH (SECONDS) 🔵"
+    };
+
+    let payload;
+
+    if (isEpic) {
+        payload = {
+            username: "OlongBell Server Announcer",
+            avatar_url: "https://i.imgur.com/8Q8pY7W.png",
+            embeds: [
+                {
+                    title: "✨ 🏆 THÀNH TỰU TỐI CAO: GIẢI MÃ HOÀN TOÀN! 🏆 ✨",
+                    description: `🔥 **Kỷ nguyên mới đã bắt đầu!** Toàn bộ các mảnh ghép thời gian của **OlongBell Server** đã được đồng bộ hóa thành công!`,
+                    color: 11141290, // Purple
+                    fields: [
+                        {
+                            name: "🔓 Trạng Thái Tổng Thể",
+                            value: "🟢 ĐỒNG BỘ HOÀN TOÀN (100%)",
+                            inline: true
+                        },
+                        {
+                            name: "🎮 Tình Trạng Máy Chủ",
+                            value: "⚡ SẴN SÀNG KHỞI CHẠY",
+                            inline: true
+                        },
+                        {
+                            name: "🌍 Lời hiệu triệu",
+                            value: "Xin chúc mừng và vinh danh những nhà thám hiểm kiên trì nhất! Hãy sẵn sàng kết nối, thế giới OlongBell sinh tồn cực hạn đang chờ đón các bạn!",
+                            inline: false
+                        }
+                    ],
+                    footer: {
+                        text: "OLONGBELLSERVER",
+                        icon_url: "https://i.imgur.com/8Q8pY7W.png"
+                    },
+                    timestamp: new Date().toISOString()
+                },
+                {
+                    title: "🎮 KẾT NỐI NGAY: HÀNH TRÌNH BẮT ĐẦU! 🎮",
+                    description: `
+🌟 **Chào mừng các nhà thám hiểm đến với OlongBell Server!** 🌟
+
+Cánh cổng dẫn tới thế giới sinh tồn cực hạn đã chính thức khai mở. Dưới đây là thông tin chi tiết giúp bạn kết nối và tham gia cùng cộng đồng ngay hôm nay:
+
+⚡ **ĐỊA CHỈ IP KẾT NỐI**
+  ✦ IP Chính thức: \`36.raumasmp.online\`
+  ✦ IP Dự phòng: \`onglongbel.raumasmp.online\`
+
+🛠️ **PHIÊN BẢN HỖ TRỢ**
+  ✦ Phiên bản: \`26.2 Fabric\`
+  *(Khuyến khích cài đặt để trải nghiệm tính năng Voice Chat trực tiếp cực đỉnh trong game!)*
+
+🌏 **MÁY CHỦ VẬT LÝ**
+  ✦ Vị trí: Hồ Chí Minh City (Băng thông cao, ping cực mượt ~5ms)
+
+📖 **HƯỚNG DẪN THAM GIA**
+  ✦ Bạn là người chơi mới? Hãy xem ngay hướng dẫn chi tiết cách cài đặt game và voice chat tại đây:
+  👉 [Xem Video Hướng Dẫn Tham Gia Máy Chủ](https://www.youtube.com/watch?v=sAs28-UqE-M&t=1s)
+`,
+                    color: 11141290, // Purple
+                    image: {
+                        url: "https://cdn.discordapp.com/attachments/1517927699123933325/1525114614445117502/content.png?ex=6a52352b&is=6a50e3ab&hm=b8e6a4b8a23b152ef9816beebe5a090f5671ec2031735ffbf9582ca6478bc174&"
+                    }
+                }
+            ]
+        };
+    } else {
+        payload = {
+            username: "OlongBell ARG Announcer",
+            avatar_url: "https://i.imgur.com/8Q8pY7W.png",
+            embeds: [{
+                title: "🎉 THÀNH TỰU ĐẠT ĐƯỢC: MANH MỐI ĐÃ ĐƯỢC GIẢI MÃ! 🎉",
+                description: `Một mảnh ghép thời gian của sự kiện **OlongBell Countdown** đã được phá vỡ thành công!`,
+                color: segmentColors[segment] || 65280,
+                fields: [
+                    {
+                        name: "🧩 Phân Khúc Giải Mã",
+                        value: `\`${titleColors[segment] || segment.toUpperCase()}\``,
+                        inline: true
+                    },
+                    {
+                        name: "🔓 Trạng Thái",
+                        value: "🟢 Đã mở khóa",
+                        inline: true
+                    },
+                    {
+                        name: "💬 Lời chúc mừng",
+                        value: "Xin chúc mừng nhà thám hiểm tài ba đã xuất sắc vượt qua thử thách này! Cánh cửa dẫn tới thế giới mới đang dần hé mở...",
+                        inline: false
+                    }
+                ],
+                footer: {
+                    text: "OLONGBELLSERVER",
+                    icon_url: "https://i.imgur.com/8Q8pY7W.png"
+                },
+                timestamp: new Date().toISOString()
+            }]
+        };
+    }
+
+    fetch(webhookUrl, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+    }).catch(err => console.error("Error sending webhook:", err));
+}
+
 // Parse secret command codes
-function handleCommand(cmdStr) {
+async function handleCommand(cmdStr) {
     initAudio();
     
     if (!cmdStr.startsWith("/")) {
@@ -776,6 +923,100 @@ function handleCommand(cmdStr) {
             }
             break;
 
+        case "/devreset":
+            if (parts.length < 2 || (await sha256(parts[1])) !== "975515d32ebced3b6ed1cd810146fb28699690ae48d3d06c2271d779100703bb") {
+                writeToChatHistory("[Server] Sai mã bảo mật nhà phát triển!", "error");
+                return;
+            }
+            // Reset unlock states
+            unlockStates.days = true; // Always stays true (glitched launch day today)
+            unlockStates.hours = false;
+            unlockStates.minutes = false;
+            unlockStates.seconds = false;
+            
+            localStorage.setItem("mc_days_unlocked", "true");
+            localStorage.setItem("mc_hours_unlocked", "false");
+            localStorage.setItem("mc_minutes_unlocked", "false");
+            localStorage.setItem("mc_seconds_unlocked", "false");
+            
+            // Reset secret section states
+            isSecretUnlocked = false;
+            isSecretActivated = false;
+            localStorage.setItem("mc_secret_unlocked", "false");
+            localStorage.setItem("mc_secret_activated", "false");
+            
+            // Reset the segment UI elements
+            ["days", "hours", "minutes", "seconds"].forEach(seg => {
+                const cover = document.getElementById(`${seg}-cover`);
+                if (cover) {
+                    cover.classList.remove("broken", "shaking");
+                }
+                const segmentElement = document.getElementById(`${seg}-segment`);
+                if (segmentElement) {
+                    segmentElement.classList.add("locked");
+                }
+            });
+            
+            // Reset secret pressure plate UI
+            if (secretSection) {
+                secretSection.style.display = "none";
+                secretSection.classList.remove("active");
+            }
+            if (secretBtn) {
+                secretBtn.classList.remove("pressed");
+            }
+            if (secretPlateLabel) {
+                secretPlateLabel.innerText = "NÚT BÍ MẬT";
+                secretPlateLabel.classList.remove("activated");
+            }
+            if (secretHint) {
+                secretHint.innerText = "Dẫm lên đĩa áp lực...";
+                secretHint.style.color = "";
+            }
+            
+            // Reset slot 8 in chest grid
+            delete items[8];
+            const slot8 = chestGrid.querySelector(`[data-index="8"]`);
+            if (slot8) {
+                slot8.classList.remove("has-item", "enchanted-glow");
+                slot8.innerHTML = "";
+                const newSlot8 = slot8.cloneNode(true);
+                slot8.replaceWith(newSlot8);
+            }
+            
+            updateCountdown();
+            writeToChatHistory("[Hệ thống] Đã reset toàn bộ trạng thái giải mã về mặc định!", "success");
+            break;
+
+        case "/devunlockall":
+            if (parts.length < 2 || (await sha256(parts[1])) !== "99e476afc6494eb2fc49bcd4494d57507604ca6e9b78f1a45aec347d1ae5ccab") {
+                writeToChatHistory("[Server] Sai mã bảo mật nhà phát triển!", "error");
+                return;
+            }
+            
+            // Unlock all segment locks
+            ["hours", "minutes", "seconds"].forEach(seg => {
+                unlockStates[seg] = true;
+                localStorage.setItem(`mc_${seg}_unlocked`, "true");
+                const cover = document.getElementById(`${seg}-cover`);
+                if (cover) {
+                    cover.classList.remove("shaking");
+                    cover.classList.add("broken");
+                }
+                const segmentElement = document.getElementById(`${seg}-segment`);
+                if (segmentElement) {
+                    segmentElement.classList.remove("locked");
+                }
+            });
+            
+            updateCountdown();
+            
+            // Show ultimate completion event
+            showAdvancement("THÀNH TỰU TỐI CAO: GIẢI MÃ TOÀN BỘ THỜI GIAN!", 'dragonDeath');
+            writeToChatHistory(`[Server] 🎉 ĐÃ MỞ KHÓA TOÀN BỘ CÁC MẢNH GHÉP THỜI GIAN QUA LỆNH ADMIN! 🎉`, "success");
+            sendDiscordWebhook("seconds", true); // Send epic webhook
+            break;
+
         case "/unlock":
             if (parts.length < 3) {
                 writeToChatHistory("Cú pháp: /unlock <days|hours|minutes|seconds> <mã_arg>", "error");
@@ -794,7 +1035,7 @@ function handleCommand(cmdStr) {
                 return;
             }
 
-            if (inputCode === codes[segment]) {
+            if ((await sha256(inputCode)) === codes[segment]) {
                 animateSegmentBreak(segment);
             } else {
                 writeToChatHistory("[Server] Sai mã bảo mật! Trực giác của bạn chưa đủ nhạy bén.", "error");
@@ -807,13 +1048,87 @@ function handleCommand(cmdStr) {
     }
 }
 
+// Synthesize Terrifying Herobrine Screech + Rumble
+function playJumpscareSound() {
+    initAudio();
+    if (!audioCtx) return;
+
+    const duration = 2.2;
+    const time = audioCtx.currentTime;
+
+    // Sub-bass heavy rumble
+    const rumbleOsc = audioCtx.createOscillator();
+    rumbleOsc.type = 'sawtooth';
+    rumbleOsc.frequency.setValueAtTime(32, time);
+    rumbleOsc.frequency.linearRampToValueAtTime(8, time + duration);
+
+    const rumbleGain = audioCtx.createGain();
+    rumbleGain.gain.setValueAtTime(1.2, time);
+    rumbleGain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+    rumbleOsc.connect(rumbleGain);
+    rumbleGain.connect(audioCtx.destination);
+
+    // High pitched screeches
+    const screamOsc1 = audioCtx.createOscillator();
+    screamOsc1.type = 'sawtooth';
+    screamOsc1.frequency.setValueAtTime(950, time);
+    screamOsc1.frequency.linearRampToValueAtTime(220, time + duration);
+
+    const screamOsc2 = audioCtx.createOscillator();
+    screamOsc2.type = 'square';
+    screamOsc2.frequency.setValueAtTime(1000, time);
+    screamOsc2.frequency.linearRampToValueAtTime(180, time + duration);
+
+    // High-speed frequency modulation (Vibrato)
+    const lfo = audioCtx.createOscillator();
+    lfo.frequency.value = 32; 
+    const lfoGain = audioCtx.createGain();
+    lfoGain.gain.value = 220; 
+
+    lfo.connect(lfoGain);
+    lfoGain.connect(screamOsc1.frequency);
+    lfoGain.connect(screamOsc2.frequency);
+
+    const screamGain = audioCtx.createGain();
+    screamGain.gain.setValueAtTime(1.0, time);
+    screamGain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+    screamOsc1.connect(screamGain);
+    screamOsc2.connect(screamGain);
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(2200, time);
+    filter.frequency.exponentialRampToValueAtTime(600, time + duration);
+
+    screamGain.connect(filter);
+    filter.connect(audioCtx.destination);
+
+    rumbleOsc.start(time);
+    rumbleOsc.stop(time + duration);
+    screamOsc1.start(time);
+    screamOsc1.stop(time + duration);
+    screamOsc2.start(time);
+    screamOsc2.stop(time + duration);
+    lfo.start(time);
+    lfo.stop(time + duration);
+}
+
 // Herobrine Scare Event
 let isGlitched = false;
 function triggerHerobrineScare() {
     if (isGlitched) return;
     isGlitched = true;
 
-    playScarySound();
+    // Play the terrifying jumpscare screech sound
+    playJumpscareSound();
+    
+    // Show fullscreen jumpscare face
+    const jumpscareOverlay = document.getElementById("jumpscareOverlay");
+    if (jumpscareOverlay) {
+        jumpscareOverlay.classList.add("active");
+    }
     
     document.body.classList.add("glitch-scare");
     const eyes = document.getElementById("herobrineEyes");
@@ -824,9 +1139,16 @@ function triggerHerobrineScare() {
     splash.innerText = "H E R O B R I N E   I S   W A T C H I N G";
     splash.style.color = "#ff5555";
     splash.style.animation = "none";
-    splash.style.fontSize = "1.5rem"; // Adjusted for VT323 size scaling
+    splash.style.fontSize = "1.5rem"; 
 
     writeToChatHistory("§4[Hệ thống] Herobrine đã xâm nhập vào trang web của bạn...", "error");
+
+    // Hide jumpscare overlay after 1.5 seconds, but keep the glitch-scare state for atmosphere
+    setTimeout(() => {
+        if (jumpscareOverlay) {
+            jumpscareOverlay.classList.remove("active");
+        }
+    }, 1500);
 
     setTimeout(() => {
         document.body.classList.remove("glitch-scare");
@@ -864,35 +1186,33 @@ const chestGrid = document.getElementById("chestGrid");
 const items = {
     10: {
         id: "sword",
-        name: "Kiếm Đồ Long (Dungeon Sword)",
-        rarity: "epic",
-        description: "Sức mạnh tấn công: +9999\nĐộ bền: Vô hạn\n\nClick để xem lén hệ thống Dungeon đặc biệt của server!",
-        lore: "Chỉ dành cho những chiến binh dũng cảm nhất...",
-        hint: "Click để mở teaser phụ bản!",
+        name: "Kiếm Cổ Khắc Họa (Engraved Broadsword)",
+        rarity: "rare",
+        description: "Thanh gươm cổ xưa rỉ sét, trên lưỡi kiếm có khắc hướng dẫn mật thư...\n\nClick để xem nội dung gợi ý!",
+        lore: "Tương truyền thanh kiếm này thuộc về Hoàng Đế Caesar vĩ đại.",
+        hint: "Click để đọc văn tự trên lưỡi kiếm!",
         imageHtml: `<img src="/textures/items/diamond_sword.png" alt="Sword">`,
-        image: "/mc_dungeon.jpg",
-        actionText: "Hệ thống Dungeon ngục tối săn Boss đa dạng với vật phẩm rớt ngẫu nhiên theo chỉ số phẩm chất, hứa hẹn mang lại trải nghiệm phiêu lưu cày cuốc RPG cực kỳ lôi cuốn!"
+        actionText: "VĂN TỰ TRÊN LƯỠI KIẾM\n\nBạn lau sạch lớp bụi trên gươm và phát hiện hướng dẫn giải mật mã:\n\n'Âm thanh hỗn loạn từ đĩa nhạc 11 ẩn chứa một chuỗi ký tự vô nghĩa trong Minecraft. Phải chăng tác giả rất thích phép toán dịch chuyển Caesar Cipher? Hãy thử dùng thuật toán dịch chuyển bảng chữ cái để tìm ra mã số giải mã gồm 6 chữ số!'"
     },
     12: {
         id: "map",
-        name: "Bản Đồ Cổ (Spawn Map)",
-        rarity: "rare",
-        description: "Vật phẩm định vị tuyệt mật.\nBản đồ vẽ chi tiết khu vực cổng thành của tân thủ.\n\nClick để mở bản đồ chụp lén thế giới sinh tồn!",
-        lore: "Nơi bắt đầu của mọi chuyến phiêu lưu vĩ đại.",
-        hint: "Click để mở ảnh thế giới Spawn!",
+        name: "Bản Đồ Thám Hiểm Mã Hóa (Encoded Navigator Map)",
+        rarity: "epic",
+        description: "Tấm bản đồ chỉ đường không vẽ địa hình mà chứa gợi ý về một chuỗi ký tự ma thuật...\n\nClick để xem gợi ý mật mã!",
+        lore: "Chỉ có thể nhìn thấy hành trình qua các bộ giải mã cổ xưa.",
+        hint: "Click để mở bản đồ định vị!",
         imageHtml: `<img src="/textures/items/filled_map.png" alt="Map">`,
-        image: "/mc_lobby.jpg",
-        actionText: "Bản đồ khu vực hồi sinh (Spawn area) được thiết kế theo phong cách trung cổ châu Âu kỳ bí kết hợp với các cổng dịch chuyển không gian độc đáo!"
+        actionText: "BẢN ĐỒ ĐỊNH VỊ BÍ ẨN\n\nMật thư ghi chép hành trình:\n\n'Manh mối tiếp theo được ẩn giấu dưới một chuỗi Base64 trong Minecraft. Hãy thử giải mã chuỗi Base64 đó để tìm ra một ID trông giống hệt đường link video YouTube. Một video ẩn giấu đang đợi bạn ở phía trước!'"
     },
     14: {
         id: "book",
-        name: "Mật Bản Tính Năng (Ancient Scroll)",
+        name: "Mật Bản Tín Hiệu Morse (Enchanted Morse Scroll)",
         rarity: "epic",
-        description: "Khám phá các tính năng đặc sắc:\n✦ Hệ thống Class: Chiến sĩ, Sát thủ, Pháp sư...\n✦ Kỹ năng Custom độc quyền\n✦ Kinh tế cân bằng: Trade tự do, Chợ đen\n✦ Phụ bản săn Boss kiếm đồ hiếm\n✦ Sự kiện chiếm thành hàng tuần",
-        lore: "Nhấn vào để đọc nhật ký máy chủ.",
-        hint: "Click để xem danh sách tính năng!",
+        description: "Cuốn sách ma thuật tỏa ra ánh sáng tím, chứa các gợi ý về tín hiệu vô tuyến...\n\nClick để giải mã gợi ý!",
+        lore: "Tín hiệu vô tuyến từ một chiều không gian khác.",
+        hint: "Click để nghe tần số ma thuật!",
         imageHtml: `<img src="/textures/items/enchanted_book.png" alt="Book">`,
-        actionText: "HỆ THỐNG MÁY CHỦ BẠN KHÔNG THỂ BỎ LỠ\n\n1. Lớp nhân vật đa dạng có cây kỹ năng nâng cấp riêng biệt.\n2. Hệ thống kinh tế cân bằng, người chơi cày chay hoàn toàn có thể mua bán giao thương tự do.\n3. Dungeon phân loại từ F đến S với cơ chế né tránh Boss custom phức tạp.\n4. Guild War chiếm lãnh thổ định kỳ thứ Bảy hàng tuần để nhận Buff độc quyền."
+        actionText: "TÍN HIỆU MORSE KHÔNG GIAN\n\nCuốn sách ghi nhận gợi ý:\n\n'Những dấu chấm \".\" và gạch \"-\" trong Minecraft chính là chìa khóa cuối cùng. Khi bạn đã tìm được video YouTube bí ẩn ở bước trước, hãy bật phụ đề (Subtitles/CC) của video đó lên. Đối chiếu các ký tự Morse với mốc thời gian xuất hiện của chúng trong phụ đề video để nhận được chuỗi mật mã chính xác!'"
     },
     16: {
         id: "cookie",
@@ -902,7 +1222,7 @@ const items = {
         lore: "Chúc người chơi có những giờ phút vui vẻ!",
         hint: "Click để nhận thông điệp Admin!",
         imageHtml: `<img src="/textures/items/cookie.png" alt="Cookie">`,
-        actionText: "LỜI NHẮN TỪ ADMIN\n\nChào bạn! Dự án máy chủ Minecraft này đã được đội ngũ chúng tôi ấp ủ hơn nửa năm nay. Từng chi tiết nhỏ về cân bằng trang bị, lối chơi dungeon và nhiệm vụ RPG cốt truyện đều được tối ưu tốt nhất.\n\nARG giải mật mã này là một món quà nhỏ chúng tôi gửi tới Discord server để tạo sự gắn kết. Bạn hãy chia sẻ mật mã này để cùng nhau giải khóa thời gian nhé! Hẹn gặp lại bạn tại Server vào 10/7/2026!"
+        actionText: "LỜI NHẮN TỪ ADMIN\n\nChào bạn! Dự án máy chủ Olong Bell Server này đã được đội ngũ chúng tôi ấp ủ hơn nửa năm nay. Từng chi tiết nhỏ về cân bằng trang bị, lối chơi dungeon và nhiệm vụ RPG cốt truyện đều được tối ưu tốt nhất.\n\nARG giải mật mã này là một món quà nhỏ chúng tôi gửi tới Discord server để tạo sự gắn kết. Bạn hãy chia sẻ mật mã này để cùng nhau giải khóa thời gian nhé! Hẹn gặp lại bạn tại Server nhé!"
     }
 };
 
@@ -1091,6 +1411,9 @@ document.addEventListener("keydown", (e) => {
             }
             if (typedKeys === secretSequence) {
                 triggerSecretButton();
+                if (!unlockStates.hours) {
+                    animateSegmentBreak("hours");
+                }
             }
         } else {
             // Reset buffer if non-digit typed (prevents messy intermediate states)

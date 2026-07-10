@@ -48,8 +48,8 @@ body {
 }
 
 @keyframes panoramaDrift {
-    0% { background-position: 40% 45%; transform: scale(1.06); }
-    100% { background-position: 60% 55%; transform: scale(1.14); }
+    0% { transform: scale(1.06) translate(-1%, -1%); }
+    100% { transform: scale(1.14) translate(1%, 1%); }
 }
 
 /* Background Particle Canvas */
@@ -92,42 +92,58 @@ body {
 
 .minecraft-title {
     font-family: 'Press Start 2P', cursive;
-    font-size: clamp(1.5rem, 8.5vw, 2.35rem);
-    color: #d0d4d8;
-    letter-spacing: 0px;
-    line-height: 1;
-    /* Clean beveled pixel emboss: light top-left highlight, dark bottom-right
-       extrusion, thick black outline. No skew so the logo reads crisp. */
+    font-size: clamp(2.3rem, 10vw, 3.8rem);
+    color: #c6c6c6;
+    letter-spacing: 2px;
+    line-height: 1.1;
     text-shadow:
-        -2px -2px 0 #f4f6f8,
-         2px  2px 0 #4a4e52,
-         3px  3px 0 #2c2f33,
-         4px  4px 0 #17191c,
-        -3px -3px 0 #000,
-         5px  5px 0 #000,
-         0    6px 8px rgba(0,0,0,0.55);
+        /* Crisp pixel outline */
+        -2px -2px 0 #000,
+         2px -2px 0 #000,
+        -2px  2px 0 #000,
+         2px  2px 0 #000,
+        /* 3D Extrusion */
+         1px  3px 0 #858585,
+         2px  4px 0 #6e6e6e,
+         3px  5px 0 #575757,
+         4px  6px 0 #3f3f3f,
+         5px  7px 0 #282828,
+         6px  8px 0 #000,
+         7px  9px 12px rgba(0,0,0,0.7);
 }
 
 .minecraft-title .highlight {
-    color: #52d452;
+    color: #55ff55;
     text-shadow:
-        -2px -2px 0 #b6f5b6,
-         2px  2px 0 #2a7a2a,
-         3px  3px 0 #1c5a1c,
-         4px  4px 0 #0f3d0f,
-        -3px -3px 0 #000,
-         5px  5px 0 #000,
-         0    6px 8px rgba(0,0,0,0.55);
+        /* Crisp pixel outline */
+        -2px -2px 0 #000,
+         2px -2px 0 #000,
+        -2px  2px 0 #000,
+         2px  2px 0 #000,
+        /* 3D Extrusion */
+         1px  3px 0 #3ca33c,
+         2px  4px 0 #2d7a2d,
+         3px  5px 0 #205720,
+         4px  6px 0 #143714,
+         5px  7px 0 #091a09,
+         6px  8px 0 #000,
+         7px  9px 12px rgba(0,0,0,0.7);
 }
 
 .minecraft-subtitle {
     font-family: 'Press Start 2P', cursive;
-    font-size: clamp(0.62rem, 3.4vw, 0.92rem);
+    font-size: clamp(0.85rem, 4vw, 1.25rem);
     color: #ffd34d;
-    margin-top: 18px;
-    letter-spacing: 5px;
-    text-indent: 5px;
-    text-shadow: 2px 2px 0px #7a4a00, 3px 3px 0px #000;
+    margin-top: 22px;
+    letter-spacing: 4px;
+    text-indent: 4px;
+    text-shadow: 
+        -2px -2px 0 #000,  
+         2px -2px 0 #000,
+        -2px  2px 0 #000,
+         2px  2px 0 #000,
+         3px  3px 0px #7a4a00,
+         4px  4px 0px #000;
 }
 
 /* Yellow bouncing splash - sits just below the logo, pivoting from its left end
@@ -502,11 +518,28 @@ body {
 
 /* 3D Cube Faces transforms - full six-sided cube so it stays solid at any angle */
 .block-face.front  { transform: rotateY(0deg)   translateZ(50px); }
-.block-face.back   { transform: rotateY(180deg) translateZ(50px); filter: brightness(0.6); }
-.block-face.right  { transform: rotateY(90deg)  translateZ(50px); filter: brightness(0.72); }
-.block-face.left   { transform: rotateY(-90deg) translateZ(50px); filter: brightness(0.86); }
-.block-face.top    { transform: rotateX(90deg)  translateZ(50px); filter: brightness(1.28); }
-.block-face.bottom { transform: rotateX(-90deg) translateZ(50px); filter: brightness(0.45); }
+.block-face.back   { transform: rotateY(180deg) translateZ(50px); }
+.block-face.right  { transform: rotateY(90deg)  translateZ(50px); }
+.block-face.left   { transform: rotateY(-90deg) translateZ(50px); }
+.block-face.top    { transform: rotateX(90deg)  translateZ(50px); }
+.block-face.bottom { transform: rotateX(-90deg) translateZ(50px); }
+
+/* Overlay shading for block faces to replace expensive CSS filters */
+.block-face::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    background-size: 100% 100%;
+}
+.block-face.back::after { background-color: rgba(0, 0, 0, 0.4); }
+.block-face.right::after { background-color: rgba(0, 0, 0, 0.28); }
+.block-face.left::after { background-color: rgba(0, 0, 0, 0.14); }
+.block-face.top::after { background-color: rgba(255, 255, 255, 0.16); }
+.block-face.bottom::after { background-color: rgba(0, 0, 0, 0.55); }
 
 /* Obsidian texture map values (real Minecraft block texture) */
 .mineable-block .block-face { background-image: url('/textures/blocks/obsidian.png'); }
@@ -1250,5 +1283,59 @@ body.glitch-scare .app-container {
     color: #ffff55;
     text-shadow: 1px 1px 0px #000;
     text-align: center;
+}
+
+/* Jumpscare overlay styling */
+.jumpscare-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+    overflow: hidden;
+}
+
+.jumpscare-overlay.active {
+    display: flex;
+    animation: flashJumpscare 0.5s steps(2, end) infinite;
+}
+
+.jumpscare-overlay img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transform: scale(1.3);
+    animation: shakeJumpscare 0.12s infinite alternate ease-in-out;
+}
+
+@keyframes flashJumpscare {
+    0%, 100% { filter: invert(0) brightness(1.2); }
+    50% { filter: invert(1) brightness(1.8) contrast(1.5); }
+}
+
+@keyframes shakeJumpscare {
+    0% { transform: scale(1.3) translate(-15px, -15px) rotate(-1deg); }
+    100% { transform: scale(1.35) translate(15px, 15px) rotate(1deg); }
+}
+
+/* Glitched Days countdown text effect */
+.glitch-days {
+    animation: textGlitch 1.5s infinite alternate ease-in-out;
+    color: #ff5555 !important;
+    text-shadow: 2px 2px 0px #00aaaa, -2px -2px 0px #aa0000 !important;
+}
+
+@keyframes textGlitch {
+    0%, 100% { transform: skew(0deg); }
+    15% { transform: skew(-3deg); filter: blur(0.3px); }
+    30% { transform: skew(4deg); }
+    45% { transform: skew(-1deg); }
+    60% { transform: skew(2deg); filter: blur(0.1px); }
+    80% { transform: skew(-2deg); }
 }
 
