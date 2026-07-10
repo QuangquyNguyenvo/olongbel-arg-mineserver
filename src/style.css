@@ -9,7 +9,6 @@
 
 body {
     background-color: #0b0e14;
-    background-image: radial-gradient(circle at center, #1b2436 0%, #080a0f 100%);
     color: #ffffff;
     font-family: 'VT323', monospace;
     font-size: 22px; /* Increased font-size slightly for Vietnamese VT323 readability */
@@ -19,6 +18,38 @@ body {
     align-items: center;
     overflow-x: hidden;
     position: relative;
+}
+
+/* Real Minecraft title-screen panorama, dimmed + slowly panning behind the UI */
+.mc-panorama-bg {
+    position: fixed;
+    inset: -3% -3%;
+    width: 106%;
+    height: 106%;
+    background-image:
+        linear-gradient(160deg, rgba(58, 34, 74, 0.35), rgba(10, 14, 24, 0.55) 45%, rgba(6, 8, 14, 0.78)),
+        url('/textures/gui/background/panorama_0.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    z-index: -3;
+    animation: panoramaDrift 45s ease-in-out infinite alternate;
+}
+
+/* Twilight colour wash + soft vignette so the empty edges feel intentional */
+.mc-panorama-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(120% 90% at 50% 12%, rgba(255, 168, 80, 0.18), rgba(255, 120, 60, 0.04) 30%, transparent 55%),
+        radial-gradient(130% 120% at 50% 120%, rgba(60, 30, 90, 0.35), transparent 60%),
+        radial-gradient(150% 120% at 50% 45%, transparent 45%, rgba(4, 5, 12, 0.72) 100%);
+}
+
+@keyframes panoramaDrift {
+    0% { background-position: 40% 45%; transform: scale(1.06); }
+    100% { background-position: 60% 55%; transform: scale(1.14); }
 }
 
 /* Background Particle Canvas */
@@ -56,74 +87,78 @@ body {
 .logo-container {
     position: relative;
     display: inline-block;
-    padding: 10px 20px;
+    padding: 10px 40px 10px 20px;
 }
 
 .minecraft-title {
     font-family: 'Press Start 2P', cursive;
-    font-size: 2.2rem;
-    color: #dedede;
-    letter-spacing: -2px;
-    text-shadow: 
-        -3px -3px 0px #3c3c3c,  
-         3px -3px 0px #3c3c3c,  
-        -3px  3px 0px #3c3c3c,  
-         3px  3px 0px #3c3c3c,
-        -5px -5px 0px #000,
-         5px -5px 0px #000,
-        -5px  5px 0px #000,
-         5px  5px 0px #000,
-         0px  7px 0px #000,
-         7px  7px 5px rgba(0,0,0,0.5);
-    transform: skewX(-5deg);
+    font-size: clamp(1.5rem, 8.5vw, 2.35rem);
+    color: #d0d4d8;
+    letter-spacing: 0px;
+    line-height: 1;
+    /* Clean beveled pixel emboss: light top-left highlight, dark bottom-right
+       extrusion, thick black outline. No skew so the logo reads crisp. */
+    text-shadow:
+        -2px -2px 0 #f4f6f8,
+         2px  2px 0 #4a4e52,
+         3px  3px 0 #2c2f33,
+         4px  4px 0 #17191c,
+        -3px -3px 0 #000,
+         5px  5px 0 #000,
+         0    6px 8px rgba(0,0,0,0.55);
 }
 
 .minecraft-title .highlight {
-    color: #4cdb4c;
-    text-shadow: 
-        -3px -3px 0px #1e5a1e,  
-         3px -3px 0px #1e5a1e,  
-        -3px  3px 0px #1e5a1e,  
-         3px  3px 0px #1e5a1e,
-        -5px -5px 0px #000,
-         5px -5px 0px #000,
-        -5px  5px 0px #000,
-         5px  5px 0px #000,
-         0px  7px 0px #000,
-         7px  7px 5px rgba(0,0,0,0.5);
+    color: #52d452;
+    text-shadow:
+        -2px -2px 0 #b6f5b6,
+         2px  2px 0 #2a7a2a,
+         3px  3px 0 #1c5a1c,
+         4px  4px 0 #0f3d0f,
+        -3px -3px 0 #000,
+         5px  5px 0 #000,
+         0    6px 8px rgba(0,0,0,0.55);
 }
 
 .minecraft-subtitle {
     font-family: 'Press Start 2P', cursive;
-    font-size: 1.1rem;
-    color: #ffaa00;
-    margin-top: 15px;
-    letter-spacing: 1px;
-    text-shadow: 2px 2px 0px #552200, 3px 3px 0px #000;
+    font-size: clamp(0.62rem, 3.4vw, 0.92rem);
+    color: #ffd34d;
+    margin-top: 18px;
+    letter-spacing: 5px;
+    text-indent: 5px;
+    text-shadow: 2px 2px 0px #7a4a00, 3px 3px 0px #000;
 }
 
-/* Yellow Splash Text - Changed to VT323 for full Vietnamese accent support */
+/* Yellow bouncing splash - sits just below the logo, pivoting from its left end
+   so long Vietnamese lines sweep down-right into open space, never over the
+   subtitle text. */
 .splash-text {
     position: absolute;
-    bottom: -18px;
-    right: -30px;
+    top: 100%;
+    left: 50%;
+    max-width: 92vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-family: 'VT323', monospace;
-    font-size: 1.45rem;
+    font-size: clamp(1rem, 4.2vw, 1.35rem);
     font-weight: bold;
-    color: #ffff55;
-    text-shadow: 2px 2px 0px #555500, 3px 3px 2px rgba(0,0,0,0.6);
-    transform: rotate(-12deg);
-    animation: splashPulse 0.5s infinite alternate ease-in-out;
+    color: #ffff4c;
+    text-shadow: 2px 2px 0px #3d3d00, 3px 3px 3px rgba(0,0,0,0.7);
+    transform: translateX(-50%) rotate(-8deg);
+    transform-origin: center;
+    animation: splashPulse 0.55s infinite alternate ease-in-out;
     white-space: nowrap;
     z-index: 15;
+    pointer-events: none;
 }
 
 @keyframes splashPulse {
     0% {
-        transform: rotate(-12deg) scale(0.92);
+        transform: translateX(-50%) rotate(-8deg) scale(0.92);
     }
     100% {
-        transform: rotate(-12deg) scale(1.08);
+        transform: translateX(-50%) rotate(-8deg) scale(1.04);
     }
 }
 
@@ -146,7 +181,7 @@ body {
 /* Changed to VT323 for full Vietnamese support */
 .panel-header {
     font-family: 'VT323', monospace;
-    font-size: 1.65rem;
+    font-size: clamp(1.1rem, 5vw, 1.65rem);
     font-weight: bold;
     color: #373737;
     text-shadow: 1px 1px 0px #ffffff;
@@ -208,7 +243,7 @@ body {
     text-transform: uppercase;
 }
 
-/* Segment Physical Block Cover */
+/* Segment Physical Block Cover - a real vanilla ore block hiding each number */
 .segment-block-cover {
     position: absolute;
     top: 0;
@@ -217,31 +252,46 @@ body {
     height: 100%;
     z-index: 10;
     cursor: pointer;
-    background-color: #211510;
-    background-image: url('/mc_obsidian.jpg');
-    background-size: cover;
+    background-color: #6b6b6b;
+    background-size: 100% 100%;
     image-rendering: pixelated;
     display: flex;
     justify-content: center;
     align-items: center;
     border: 3px solid #000000;
     transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045);
-    box-shadow: inset -3px -3px 0 rgba(0,0,0,0.5), inset 3px 3px 0 rgba(255,255,255,0.15);
+    box-shadow: inset -4px -4px 0 rgba(0,0,0,0.55), inset 4px 4px 0 rgba(255,255,255,0.22);
+    overflow: hidden;
 }
 
-/* Tint cover blocks to look different */
-#days-cover {
-    filter: hue-rotate(185deg) brightness(1.35) contrast(1.1); /* Blue/iron lock */
+/* Soft coloured glow pulsing over the ore so each locked block reads as a
+   distinct, valuable ore worth mining. */
+.segment-block-cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    animation: oreGlow 2.6s infinite ease-in-out;
 }
-#hours-cover {
-    filter: hue-rotate(60deg) brightness(1.4) contrast(1.15); /* Gold lock */
+
+@keyframes oreGlow {
+    0%, 100% { opacity: 0; }
+    50%      { opacity: 0.5; }
 }
-#minutes-cover {
-    filter: hue-rotate(300deg) brightness(1.3) contrast(1.2); /* Redstone lock */
-}
-#seconds-cover {
-    /* Obsidian dark cover (default) */
-}
+
+/* Days = Diamond ore */
+#days-cover        { background-image: url('/textures/blocks/diamond_ore.png'); }
+#days-cover::before    { background: radial-gradient(circle at 50% 45%, #7ff0ff, transparent 65%); }
+/* Hours = Gold ore */
+#hours-cover       { background-image: url('/textures/blocks/gold_ore.png'); }
+#hours-cover::before   { background: radial-gradient(circle at 50% 45%, #ffd863, transparent 65%); }
+/* Minutes = Redstone ore */
+#minutes-cover     { background-image: url('/textures/blocks/redstone_ore.png'); }
+#minutes-cover::before { background: radial-gradient(circle at 50% 45%, #ff5a5a, transparent 65%); }
+/* Seconds = Lapis ore */
+#seconds-cover     { background-image: url('/textures/blocks/lapis_ore.png'); }
+#seconds-cover::before { background: radial-gradient(circle at 50% 45%, #6c86ff, transparent 65%); }
 
 /* Pure CSS Padlock - Replaces Lock Emoji */
 .pixel-lock {
@@ -306,6 +356,7 @@ body {
 /* XP Bar Component */
 .xp-bar-container {
     width: 100%;
+    max-width: 364px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -315,9 +366,11 @@ body {
 
 .xp-bar-bg {
     width: 100%;
-    height: 12px;
-    background-color: #1e1e1e;
-    border: 2px solid #555555;
+    max-width: 364px;
+    height: 10px;
+    background-image: url('/textures/gui/xp_bar_bg.png');
+    background-size: 100% 100%;
+    image-rendering: pixelated;
     outline: 2px solid #000000;
     position: relative;
     overflow: hidden;
@@ -326,8 +379,10 @@ body {
 .xp-bar-fill {
     height: 100%;
     width: 0%;
-    background-color: #55ff55;
-    background-image: linear-gradient(to bottom, #c5ffc5 0%, #55ff55 50%, #00aa00 100%);
+    background-image: url('/textures/gui/xp_bar_progress.png');
+    background-size: 364px 100%;
+    background-repeat: no-repeat;
+    image-rendering: pixelated;
     transition: width 0.5s ease-out;
 }
 
@@ -352,12 +407,10 @@ body {
     width: 100%;
     max-width: 320px;
     height: 52px;
-    background-color: #9e9e9e;
-    border: 4px solid #565656;
-    border-top-color: #ffffff;
-    border-left-color: #ffffff;
-    outline: 4px solid #000000;
-    box-shadow: inset -4px -4px 0px #565656, inset 4px 4px 0px #dbdbdb;
+    background-image: url('/textures/gui/button.png');
+    background-size: 100% 100%;
+    image-rendering: pixelated;
+    outline: 2px solid #000000;
     color: #e0e0e0;
     font-family: 'VT323', monospace;
     font-size: 1.55rem;
@@ -365,23 +418,18 @@ body {
     text-decoration: none;
     text-shadow: 2px 2px 0px #3f3f3f;
     cursor: pointer;
-    transition: all 0.1s;
+    transition: transform 0.1s;
     text-align: center;
 }
 
 .mc-btn:hover {
-    background-color: #5b87e7;
-    border-color: #2c4b93;
-    border-top-color: #8faeff;
-    border-left-color: #8faeff;
-    box-shadow: inset -4px -4px 0px #2c4b93, inset 4px 4px 0px #a4beff;
+    background-image: url('/textures/gui/button_highlighted.png');
     color: #ffff55;
     text-shadow: 2px 2px 0px #555500;
 }
 
 .mc-btn:active {
     transform: translateY(2px);
-    box-shadow: inset 4px 4px 0px #2c4b93, inset -4px -4px 0px #a4beff;
 }
 
 .menu-actions {
@@ -446,40 +494,60 @@ body {
     position: absolute;
     width: 100px;
     height: 100px;
-    border: 1px solid rgba(0,0,0,0.2);
+    border: 1px solid rgba(0,0,0,0.25);
     box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
-    background-size: cover;
+    background-size: 100% 100%;
     image-rendering: pixelated;
 }
 
-/* 3D Cube Faces transforms (Corrected Left/Right positioning for 3D visibility) */
-.block-face.front {
-    transform: rotateY(0deg) translateZ(50px);
+/* 3D Cube Faces transforms - full six-sided cube so it stays solid at any angle */
+.block-face.front  { transform: rotateY(0deg)   translateZ(50px); }
+.block-face.back   { transform: rotateY(180deg) translateZ(50px); filter: brightness(0.6); }
+.block-face.right  { transform: rotateY(90deg)  translateZ(50px); filter: brightness(0.72); }
+.block-face.left   { transform: rotateY(-90deg) translateZ(50px); filter: brightness(0.86); }
+.block-face.top    { transform: rotateX(90deg)  translateZ(50px); filter: brightness(1.28); }
+.block-face.bottom { transform: rotateX(-90deg) translateZ(50px); filter: brightness(0.45); }
+
+/* Obsidian texture map values (real Minecraft block texture) */
+.mineable-block .block-face { background-image: url('/textures/blocks/obsidian.png'); }
+
+/* Chest block textures (cropped from real Minecraft chest entity texture).
+   Textures are 14x10 / 14x14 so we stretch to the face with 100% 100% - the
+   pixelated rendering keeps it crisp and reading clearly as a chest. */
+.mineable-block.chest-block .front { background-image: url('/textures/blocks/chest_front.png'); }
+.mineable-block.chest-block .back  { background-image: url('/textures/blocks/chest_side.png'); }
+.mineable-block.chest-block .left  { background-image: url('/textures/blocks/chest_side.png'); }
+.mineable-block.chest-block .right { background-image: url('/textures/blocks/chest_side.png'); }
+.mineable-block.chest-block .top   { background-image: url('/textures/blocks/chest_top.png'); }
+.mineable-block.chest-block .bottom{ background-image: url('/textures/blocks/oak_planks.png'); }
+
+/* Soft golden aura that appears once the chest is revealed */
+.block-glow {
+    position: absolute;
+    inset: -30px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 200, 60, 0.45), transparent 65%);
+    transform: translateZ(-20px);
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
 }
-.block-face.top {
-    transform: rotateX(90deg) translateZ(50px);
-    filter: brightness(1.25);
-}
-.block-face.left {
-    transform: rotateY(-90deg) translateZ(50px);
-    filter: brightness(0.85);
-}
-.block-face.right {
-    transform: rotateY(90deg) translateZ(50px);
-    filter: brightness(0.7);
+.mineable-block.chest-block .block-glow { opacity: 1; animation: chestPulse 1.8s infinite ease-in-out; }
+
+@keyframes chestPulse {
+    0%, 100% { opacity: 0.55; }
+    50%      { opacity: 1; }
 }
 
-/* Obsidian texture map values */
-.mineable-block .front { background-image: url('/mc_obsidian.jpg'); }
-.mineable-block .top { background-image: url('/mc_obsidian.jpg'); }
-.mineable-block .left { background-image: url('/mc_obsidian.jpg'); }
-.mineable-block .right { background-image: url('/mc_obsidian.jpg'); }
-
-/* Chest block textures */
-.mineable-block.chest-block .front { background-image: url('/mc_chest.jpg'); }
-.mineable-block.chest-block .top { background-image: url('/mc_chest.jpg'); filter: brightness(1.1); }
-.mineable-block.chest-block .left { background-image: url('/mc_chest.jpg'); filter: brightness(0.9); }
-.mineable-block.chest-block .right { background-image: url('/mc_chest.jpg'); filter: brightness(0.7); }
+/* Quick lift + brighten when the chest is opened (no fragile hinge geometry) */
+.mineable-block.chest-block.open {
+    animation: chestOpenPop 0.4s ease forwards;
+}
+@keyframes chestOpenPop {
+    0%   { transform: rotateX(-20deg) rotateY(35deg) scale(1); }
+    45%  { transform: rotateX(-20deg) rotateY(35deg) scale(1.18); filter: brightness(1.5); }
+    100% { transform: rotateX(-20deg) rotateY(35deg) scale(1.08); filter: brightness(1.1); }
+}
 
 /* Crack overlay for mining progress */
 .crack-overlay {
@@ -628,7 +696,7 @@ body {
 /* Advancement Toast Notification Banner */
 .advancement-toast {
     position: fixed;
-    top: -100px;
+    top: -180px;
     right: 20px;
     width: 290px;
     background-color: #211510;
@@ -652,7 +720,6 @@ body {
     width: 32px;
     height: 32px;
     image-rendering: pixelated;
-    mix-blend-mode: screen;
     filter: drop-shadow(1px 1px 0px rgba(0,0,0,0.8));
 }
 
@@ -809,7 +876,6 @@ body {
     width: 30px;
     height: 30px;
     image-rendering: pixelated;
-    mix-blend-mode: screen;
     filter: drop-shadow(1px 1px 0px rgba(0,0,0,0.85));
     transition: transform 0.05s;
 }
@@ -1007,19 +1073,18 @@ body.glitch-scare .app-container {
 
 /* Media Queries for Responsiveness */
 @media (max-width: 480px) {
-    .minecraft-title {
-        font-size: 1.6rem;
-    }
-    .splash-text {
-        font-size: 1.15rem;
-        right: -10px;
-        bottom: -20px;
+    .app-container {
+        padding: 14px;
+        gap: 22px;
     }
     .timer-value {
         font-size: 1.1rem;
     }
     .timer-label {
         font-size: 0.9rem;
+    }
+    .timer-container {
+        gap: 8px;
     }
     .chest-gui {
         max-width: 360px;
@@ -1056,7 +1121,7 @@ body.glitch-scare .app-container {
 }
 
 .secret-wall-plate {
-    background-image: url('/mc_stone.png');
+    background-image: url('/textures/blocks/stone.png');
     background-size: 48px 48px;
     image-rendering: pixelated;
     border: 4px solid #555555;
@@ -1116,7 +1181,7 @@ body.glitch-scare .app-container {
 
 .button-face {
     position: absolute;
-    background-image: url('/mc_oak.png');
+    background-image: url('/textures/blocks/oak_planks.png');
     background-size: 32px 32px;
     image-rendering: pixelated;
     box-shadow: inset -2px -2px 0 rgba(0,0,0,0.4), inset 2px 2px 0 rgba(255,255,255,0.15);

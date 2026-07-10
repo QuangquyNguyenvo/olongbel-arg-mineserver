@@ -1,7 +1,21 @@
 // Import style
 import './style.css';
 
-// Web Audio API Sound Synthesizer
+// Real Minecraft sound effects (vanilla .ogg assets, not synthesized)
+const soundFiles = {
+    click: '/sounds/click.ogg',
+    hitStone: '/sounds/step_stone.ogg',
+    hitWood: '/sounds/step_wood.ogg',
+    breakStone: '/sounds/dig_stone.ogg',
+    chestOpen: '/sounds/chest_open.ogg',
+    chestClose: '/sounds/chest_close.ogg',
+    levelUp: '/sounds/levelup.ogg',
+    orb: '/sounds/orb.ogg',
+    creeperFuse: '/sounds/fuse.ogg',
+};
+
+// Web Audio API context, kept only for the custom Herobrine jumpscare rumble
+// (vanilla Minecraft has no canonical "Herobrine" sound, so that one stays synthesized)
 let audioCtx = null;
 
 function initAudio() {
@@ -13,176 +27,43 @@ function initAudio() {
     }
 }
 
-// Synthesize Minecraft Click Sound
+function playSound(key, { volume = 0.5, rateJitter = 0 } = {}) {
+    const src = soundFiles[key];
+    if (!src) return;
+    const audio = new Audio(src);
+    audio.volume = volume;
+    if (rateJitter) {
+        audio.playbackRate = 1 + (Math.random() * 2 - 1) * rateJitter;
+    }
+    audio.play().catch(() => {});
+}
+
 function playClickSound() {
-    initAudio();
-    if (!audioCtx) return;
-
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(1000, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.06);
-    
-    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.06);
-    
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.06);
+    playSound('click', { volume: 0.5 });
 }
 
-// Synthesize Block Hit Sound (Gravel/Stone hit)
 function playHitSound() {
-    initAudio();
-    if (!audioCtx) return;
-
-    const bufferSize = audioCtx.sampleRate * 0.05;
-    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-        data[i] = Math.random() * 2 - 1;
-    }
-    
-    const noise = audioCtx.createBufferSource();
-    noise.buffer = buffer;
-    
-    const filter = audioCtx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(160 + Math.random() * 40, audioCtx.currentTime);
-    
-    const gain = audioCtx.createGain();
-    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
-    
-    noise.connect(filter);
-    filter.connect(gain);
-    gain.connect(audioCtx.destination);
-    
-    noise.start();
+    playSound('hitStone', { volume: 0.4, rateJitter: 0.12 });
 }
 
-// Synthesize Block Break Explosion Sound
 function playBreakSound() {
-    initAudio();
-    if (!audioCtx) return;
-
-    // Low pitch thud
-    const osc = audioCtx.createOscillator();
-    const oscGain = audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(90, audioCtx.currentTime);
-    osc.frequency.linearRampToValueAtTime(30, audioCtx.currentTime + 0.25);
-    oscGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-    oscGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
-    
-    osc.connect(oscGain);
-    oscGain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.25);
-
-    // Noise explosion crunch
-    const bufferSize = audioCtx.sampleRate * 0.2;
-    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-        data[i] = Math.random() * 2 - 1;
-    }
-    
-    const noise = audioCtx.createBufferSource();
-    noise.buffer = buffer;
-    
-    const filter = audioCtx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(200, audioCtx.currentTime);
-    
-    const gain = audioCtx.createGain();
-    gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-    
-    noise.connect(filter);
-    filter.connect(gain);
-    gain.connect(audioCtx.destination);
-    
-    noise.start();
+    playSound('breakStone', { volume: 0.6, rateJitter: 0.08 });
 }
 
-// Synthesize Chest Open Sound
 function playChestOpenSound() {
-    initAudio();
-    if (!audioCtx) return;
-
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(200, audioCtx.currentTime);
-    osc.frequency.linearRampToValueAtTime(350, audioCtx.currentTime + 0.3);
-    
-    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.15);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
-    
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.35);
+    playSound('chestOpen', { volume: 0.55 });
 }
 
-// Synthesize Chest Close Sound
 function playChestCloseSound() {
-    initAudio();
-    if (!audioCtx) return;
-
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(350, audioCtx.currentTime);
-    osc.frequency.linearRampToValueAtTime(200, audioCtx.currentTime + 0.25);
-    
-    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
-    
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.3);
+    playSound('chestClose', { volume: 0.5 });
 }
 
-// Synthesize Minecraft Level Up / Challenge Complete Sound
 function playLevelUpSound() {
-    initAudio();
-    if (!audioCtx) return;
+    playSound('levelUp', { volume: 0.5 });
+}
 
-    const notes = [
-        { f: 392, d: 0.1 },  // G4
-        { f: 523, d: 0.1 },  // C5
-        { f: 659, d: 0.1 },  // E5
-        { f: 784, d: 0.25 }  // G5
-    ];
-    
-    let time = audioCtx.currentTime;
-    notes.forEach(note => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(note.f, time);
-        gain.gain.setValueAtTime(0.15, time);
-        gain.gain.exponentialRampToValueAtTime(0.01, time + note.d);
-        
-        osc.start(time);
-        osc.stop(time + note.d);
-        time += 0.12;
-    });
+function playWoodClickSound() {
+    playSound('hitWood', { volume: 0.45, rateJitter: 0.1 });
 }
 
 // Synthesize Herobrine Scary Ambient Rumble Sound
@@ -247,39 +128,8 @@ function playScarySound() {
     noise.stop(time + duration);
 }
 
-// Synthesize Creeper Hiss Easter Egg Sound
 function playCreeperHiss() {
-    initAudio();
-    if (!audioCtx) return;
-
-    const duration = 1.3;
-    const time = audioCtx.currentTime;
-
-    const bufferSize = audioCtx.sampleRate * duration;
-    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-        data[i] = Math.random() * 2 - 1;
-    }
-
-    const noise = audioCtx.createBufferSource();
-    noise.buffer = buffer;
-
-    const filter = audioCtx.createBiquadFilter();
-    filter.type = 'highpass';
-    filter.frequency.setValueAtTime(2800, time);
-    filter.frequency.linearRampToValueAtTime(1600, time + duration);
-
-    const gain = audioCtx.createGain();
-    gain.gain.setValueAtTime(0.06, time); // Subtle volume hiss
-    gain.gain.linearRampToValueAtTime(0.001, time + duration);
-
-    noise.connect(filter);
-    filter.connect(gain);
-    gain.connect(audioCtx.destination);
-
-    noise.start(time);
-    noise.stop(time + duration);
+    playSound('creeperFuse', { volume: 0.3 });
 }
 
 // Splash Texts
@@ -520,7 +370,7 @@ function handleParticles() {
     for (let i = 0; i < particles.length; i++) {
         particles[i].update();
         particles[i].draw();
-        
+
         if (particles[i].life >= particles[i].maxLife) {
             particles.splice(i, 1);
             i--;
@@ -528,8 +378,85 @@ function handleParticles() {
     }
 }
 
+// Floating isometric Minecraft blocks drifting through the background so the
+// empty edges of the panorama feel alive instead of blank.
+const BLOCK_PALETTES = [
+    { top: '#7cbd57', left: '#7b5a37', right: '#5f4529' }, // grass
+    { top: '#6fdbe2', left: '#3f9aa0', right: '#2f7a7f' }, // diamond
+    { top: '#f9d84b', left: '#c79a2c', right: '#a67e22' }, // gold
+    { top: '#d84b4b', left: '#9e2f2f', right: '#7d2323' }, // redstone
+    { top: '#4fd07a', left: '#2f9e56', right: '#237a41' }, // emerald
+    { top: '#9c7a4d', left: '#6f5636', right: '#574328' }, // dirt
+    { top: '#a2a2a2', left: '#727272', right: '#585858' }, // stone
+    { top: '#6c86ff', left: '#3d54c4', right: '#2c3f99' }, // lapis
+];
+
+class FloatingBlock {
+    constructor(initial = false) {
+        this.reset(initial);
+    }
+    reset(initial) {
+        this.size = Math.random() * 20 + 16;
+        this.x = Math.random() * canvas.width;
+        this.y = initial ? Math.random() * canvas.height
+                          : canvas.height + this.size * 3;
+        this.vy = -(Math.random() * 0.25 + 0.12);
+        this.swayAmp = Math.random() * 24 + 8;
+        this.swayFreq = Math.random() * 0.0015 + 0.0005;
+        this.phase = Math.random() * Math.PI * 2;
+        this.baseX = this.x;
+        this.pal = BLOCK_PALETTES[Math.floor(Math.random() * BLOCK_PALETTES.length)];
+        this.alpha = Math.random() * 0.18 + 0.14;
+        this.spin = 0;
+    }
+    update() {
+        this.y += this.vy;
+        this.phase += this.swayFreq * 16;
+        this.x = this.baseX + Math.sin(this.phase) * this.swayAmp;
+        if (this.y < -this.size * 3) this.reset(false);
+    }
+    draw() {
+        const s = this.size;
+        const w = s, th = s * 0.5, sh = s;
+        const cx = this.x, cy = this.y;
+        const Ttop = [cx, cy - th], R = [cx + w, cy], Bmid = [cx, cy + th], L = [cx - w, cy];
+        const Lb = [cx - w, cy + sh], Cb = [cx, cy + th + sh], Rb = [cx + w, cy + sh];
+
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.lineJoin = 'round';
+        const face = (pts, color) => {
+            ctx.beginPath();
+            ctx.moveTo(pts[0][0], pts[0][1]);
+            for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+        };
+        face([L, Bmid, Cb, Lb], this.pal.left);
+        face([R, Bmid, Cb, Rb], this.pal.right);
+        face([Ttop, R, Bmid, L], this.pal.top);
+        // subtle edge highlight for the pixel-cube read
+        ctx.globalAlpha = this.alpha * 0.7;
+        ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.restore();
+    }
+}
+
+let floatingBlocks = [];
+function initFloatingBlocks() {
+    const count = Math.max(7, Math.min(16, Math.round(window.innerWidth / 140)));
+    floatingBlocks = [];
+    for (let i = 0; i < count; i++) floatingBlocks.push(new FloatingBlock(true));
+}
+initFloatingBlocks();
+window.addEventListener('resize', initFloatingBlocks);
+
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const b of floatingBlocks) { b.update(); b.draw(); }
     handleParticles();
     requestAnimationFrame(animate);
 }
@@ -617,7 +544,12 @@ mineableBlock.addEventListener("click", () => {
     initAudio();
     if (isBroken) {
         playChestOpenSound();
-        chestModal.classList.add("active");
+        // Clear the inline float animation so the CSS open-pop can take over
+        mineableBlock.style.animation = "none";
+        mineableBlock.classList.add("open");
+        setTimeout(() => {
+            chestModal.classList.add("active");
+        }, 300);
         return;
     }
 
@@ -756,14 +688,14 @@ function animateSegmentBreak(segment) {
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
 
-        // Emit block break particles
-        const ironColors = ['#dbdbdb', '#b0b0b0', '#8c8c8c', '#555555'];
-        const goldColors = ['#ffea4a', '#e6c300', '#b09400', '#5c4d00'];
-        const redstoneColors = ['#ff2222', '#b30000', '#730000', '#3b0000'];
-        const obsidianColors = ['#100c1e', '#2d154c', '#190e2d', '#130a24'];
+        // Emit block break particles matching each ore's colour
+        const diamondColors = ['#bff7fb', '#6fdbe2', '#3f9aa0', '#2f7a7f'];
+        const goldColors = ['#ffe680', '#f9d84b', '#c79a2c', '#8a6b1f'];
+        const redstoneColors = ['#ff7b7b', '#ff2222', '#b30000', '#730000'];
+        const lapisColors = ['#a9b8ff', '#6c86ff', '#3d54c4', '#243a99'];
 
-        let particleColors = obsidianColors;
-        if (segment === "days") particleColors = ironColors;
+        let particleColors = lapisColors;
+        if (segment === "days") particleColors = diamondColors;
         if (segment === "hours") particleColors = goldColors;
         if (segment === "minutes") particleColors = redstoneColors;
 
@@ -773,6 +705,7 @@ function animateSegmentBreak(segment) {
         }
 
         // Show advancement toast
+        playSound('orb', { volume: 0.4, rateJitter: 0.15 });
         showAdvancement(`Đã Giải Mã Thành Công: ${segment.toUpperCase()}!`);
         writeToChatHistory(`[Server] Phân khúc '${segment.toUpperCase()}' đã được phá vỡ thành công!`, "success");
 
@@ -936,7 +869,7 @@ const items = {
         description: "Sức mạnh tấn công: +9999\nĐộ bền: Vô hạn\n\nClick để xem lén hệ thống Dungeon đặc biệt của server!",
         lore: "Chỉ dành cho những chiến binh dũng cảm nhất...",
         hint: "Click để mở teaser phụ bản!",
-        imageHtml: `<img src="/mc_sword.jpg" alt="Sword">`,
+        imageHtml: `<img src="/textures/items/diamond_sword.png" alt="Sword">`,
         image: "/mc_dungeon.jpg",
         actionText: "Hệ thống Dungeon ngục tối săn Boss đa dạng với vật phẩm rớt ngẫu nhiên theo chỉ số phẩm chất, hứa hẹn mang lại trải nghiệm phiêu lưu cày cuốc RPG cực kỳ lôi cuốn!"
     },
@@ -947,7 +880,7 @@ const items = {
         description: "Vật phẩm định vị tuyệt mật.\nBản đồ vẽ chi tiết khu vực cổng thành của tân thủ.\n\nClick để mở bản đồ chụp lén thế giới sinh tồn!",
         lore: "Nơi bắt đầu của mọi chuyến phiêu lưu vĩ đại.",
         hint: "Click để mở ảnh thế giới Spawn!",
-        imageHtml: `<img src="/mc_map.jpg" alt="Map">`,
+        imageHtml: `<img src="/textures/items/filled_map.png" alt="Map">`,
         image: "/mc_lobby.jpg",
         actionText: "Bản đồ khu vực hồi sinh (Spawn area) được thiết kế theo phong cách trung cổ châu Âu kỳ bí kết hợp với các cổng dịch chuyển không gian độc đáo!"
     },
@@ -958,7 +891,7 @@ const items = {
         description: "Khám phá các tính năng đặc sắc:\n✦ Hệ thống Class: Chiến sĩ, Sát thủ, Pháp sư...\n✦ Kỹ năng Custom độc quyền\n✦ Kinh tế cân bằng: Trade tự do, Chợ đen\n✦ Phụ bản săn Boss kiếm đồ hiếm\n✦ Sự kiện chiếm thành hàng tuần",
         lore: "Nhấn vào để đọc nhật ký máy chủ.",
         hint: "Click để xem danh sách tính năng!",
-        imageHtml: `<img src="/mc_book.jpg" alt="Book">`,
+        imageHtml: `<img src="/textures/items/enchanted_book.png" alt="Book">`,
         actionText: "HỆ THỐNG MÁY CHỦ BẠN KHÔNG THỂ BỎ LỠ\n\n1. Lớp nhân vật đa dạng có cây kỹ năng nâng cấp riêng biệt.\n2. Hệ thống kinh tế cân bằng, người chơi cày chay hoàn toàn có thể mua bán giao thương tự do.\n3. Dungeon phân loại từ F đến S với cơ chế né tránh Boss custom phức tạp.\n4. Guild War chiếm lãnh thổ định kỳ thứ Bảy hàng tuần để nhận Buff độc quyền."
     },
     16: {
@@ -968,7 +901,7 @@ const items = {
         description: "Thơm ngon và ngọt ngào.\nĂn vào tăng 100% độ tỉnh táo để cày cuốc!\n\nClick để xem thông điệp từ Admin!",
         lore: "Chúc người chơi có những giờ phút vui vẻ!",
         hint: "Click để nhận thông điệp Admin!",
-        imageHtml: `<img src="/mc_cookie.jpg" alt="Cookie">`,
+        imageHtml: `<img src="/textures/items/cookie.png" alt="Cookie">`,
         actionText: "LỜI NHẮN TỪ ADMIN\n\nChào bạn! Dự án máy chủ Minecraft này đã được đội ngũ chúng tôi ấp ủ hơn nửa năm nay. Từng chi tiết nhỏ về cân bằng trang bị, lối chơi dungeon và nhiệm vụ RPG cốt truyện đều được tối ưu tốt nhất.\n\nARG giải mật mã này là một món quà nhỏ chúng tôi gửi tới Discord server để tạo sự gắn kết. Bạn hãy chia sẻ mật mã này để cùng nhau giải khóa thời gian nhé! Hẹn gặp lại bạn tại Server vào 10/7/2026!"
     }
 };
@@ -1049,6 +982,9 @@ for (let i = 0; i < 27; i++) {
 document.getElementById("closeChestBtn").addEventListener("click", () => {
     playChestCloseSound();
     chestModal.classList.remove("active");
+    mineableBlock.classList.remove("open");
+    // Resume the gentle floating bob after the chest closes
+    mineableBlock.style.animation = "floatBlock 2s infinite alternate ease-in-out";
 });
 
 // Close Teaser Modal
@@ -1078,7 +1014,7 @@ function unlockSecretChestItem() {
         description: "Bản thảo tối mật của Độc Long bang.<br>Chứa thông tin về cổng Nether bí mật.<br><br>Click để mở khóa manh mối ARG tiếp theo!",
         lore: "Người ta nói rằng nó được viết bằng máu...",
         hint: "Click để đọc mật chỉ!",
-        imageHtml: `<img src="/mc_book.jpg" alt="Secret Scroll" style="filter: hue-rotate(90deg);">`,
+        imageHtml: `<img src="/textures/items/writable_book.png" alt="Secret Scroll">`,
         image: null,
         actionText: "MANH MỐI ARG CHÍNH THỨC\n\nChúc mừng bạn đã tìm thấy nút bấm bí ẩn! Mật chỉ ghi: 'Hãy truy cập Discord và nhập lệnh !verify 35791320242832374042475054 để nhận vai trò Khai Sáng và phần thưởng độc quyền!'\n\nHãy lưu lại mã số này và chia sẻ nó với những người chơi khác!"
     };
@@ -1166,10 +1102,10 @@ document.addEventListener("keydown", (e) => {
 // Setup click action on the 3D button
 secretBtn.addEventListener("click", () => {
     initAudio();
-    
+
     // 3D physical press animation
     secretBtn.classList.add("pressed");
-    playClickSound();
+    playWoodClickSound();
     
     setTimeout(() => {
         secretBtn.classList.remove("pressed");

@@ -14,6 +14,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Real Minecraft title-screen panorama background -->
+    <div class="mc-panorama-bg"></div>
+
     <!-- Background Canvas for Minecraft Particles -->
     <canvas id="particleCanvas"></canvas>
 
@@ -25,7 +28,7 @@
 
     <!-- Advancement Toast Banner (Uses standard image asset instead of emoji) -->
     <div class="advancement-toast" id="advancementToast">
-        <img class="toast-icon-img" src="/mc_sword.jpg" alt="Advancement">
+        <img class="toast-icon-img" src="/textures/items/diamond_sword.png" alt="Advancement">
         <div class="toast-text">
             <div class="toast-title">Thử Thách Hoàn Thành!</div>
             <div class="toast-desc" id="toastDesc">Đã mở khóa một phần thời gian</div>
@@ -123,10 +126,13 @@
                 <!-- Mineable block - updated to hold 4 side faces for a full 3D rendering -->
                 <div class="mineable-block" id="mineableBlock">
                     <div class="block-face front" id="blockFront"></div>
+                    <div class="block-face back"></div>
                     <div class="block-face top"></div>
+                    <div class="block-face bottom"></div>
                     <div class="block-face left"></div>
                     <div class="block-face right"></div>
                     <div class="crack-overlay" id="crackOverlay"></div>
+                    <div class="block-glow"></div>
                 </div>
                 <div class="click-hint" id="clickHint">Mẹo: Click để đập khối! (0/10)</div>
             </div>
@@ -151,8 +157,7 @@
 
         <!-- Footer -->
         <footer class="app-footer">
-            <p>Hanoi/Jakarta GMT+7 - Launching on July 10, 2026 at 21:00</p>
-            <p style="font-size: 0.8rem; margin-top: 4px; color: #666;">Nhấn phím [T] hoặc [/] để mở Minecraft Chat Console và giải mã ARG</p>
+            <p style="font-size: 0.8rem; color: #666;">Nhấn phím [T] hoặc [/] để mở Minecraft Chat Console và giải mã ARG</p>
         </footer>
     </div>
 
