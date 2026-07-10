@@ -1057,6 +1057,163 @@ document.getElementById("closeTeaserBtn").addEventListener("click", () => {
     document.getElementById("teaserModal").classList.remove("active");
 });
 
+// Minecraft ARG Secret Sequence Trigger ("35791320242832374042475054")
+const secretSequence = "35791320242832374042475054";
+let typedKeys = "";
+
+const secretSection = document.getElementById("secretSection");
+const secretBtn = document.getElementById("secretBtn");
+const secretPlateLabel = document.getElementById("secretPlateLabel");
+const secretHint = document.getElementById("secretHint");
+
+let isSecretUnlocked = localStorage.getItem("mc_secret_unlocked") === "true";
+let isSecretActivated = localStorage.getItem("mc_secret_activated") === "true";
+
+// Helper to register slot 8 scroll details
+function unlockSecretChestItem() {
+    items[8] = {
+        id: "secret",
+        name: "Bản Thảo Thứ V (Secret Scroll)",
+        rarity: "epic",
+        description: "Bản thảo tối mật của Độc Long bang.<br>Chứa thông tin về cổng Nether bí mật.<br><br>Click để mở khóa manh mối ARG tiếp theo!",
+        lore: "Người ta nói rằng nó được viết bằng máu...",
+        hint: "Click để đọc mật chỉ!",
+        imageHtml: `<img src="/mc_book.jpg" alt="Secret Scroll" style="filter: hue-rotate(90deg);">`,
+        image: null,
+        actionText: "MANH MỐI ARG CHÍNH THỨC\n\nChúc mừng bạn đã tìm thấy nút bấm bí ẩn! Mật chỉ ghi: 'Hãy truy cập Discord và nhập lệnh !verify 35791320242832374042475054 để nhận vai trò Khai Sáng và phần thưởng độc quyền!'\n\nHãy lưu lại mã số này và chia sẻ nó với những người chơi khác!"
+    };
+
+    const slot8 = chestGrid.querySelector(`[data-index="8"]`);
+    if (slot8) {
+        slot8.classList.add("has-item", "enchanted-glow");
+        slot8.innerHTML = items[8].imageHtml;
+        
+        slot8.addEventListener("mouseenter", () => {
+            const item = items[8];
+            tooltip.innerHTML = `
+                <div class="tooltip-title epic">${item.name}</div>
+                <div class="tooltip-description">${item.description}</div>
+                <div class="tooltip-lore">${item.lore}</div>
+                <div class="tooltip-hint">${item.hint}</div>
+            `;
+            tooltip.style.display = "flex";
+        });
+
+        slot8.addEventListener("mousemove", (e) => {
+            tooltip.style.left = (e.clientX + 15) + "px";
+            tooltip.style.top = (e.clientY + 15) + "px";
+        });
+
+        slot8.addEventListener("mouseleave", () => {
+            tooltip.style.display = "none";
+        });
+
+        slot8.addEventListener("click", () => {
+            tooltip.style.display = "none";
+            playClickSound();
+            
+            const item = items[8];
+            const teaserModal = document.getElementById("teaserModal");
+            const teaserTitle = document.getElementById("teaserTitle");
+            const teaserImage = document.getElementById("teaserImage");
+            const teaserText = document.getElementById("teaserText");
+
+            teaserTitle.innerText = item.name;
+            teaserImage.style.display = "none";
+            teaserText.innerHTML = item.actionText.replace(/\n/g, '<br>');
+            teaserModal.classList.add("active");
+        });
+    }
+}
+
+// Function to trigger the button's appearance
+function triggerSecretButton() {
+    if (isSecretUnlocked) return;
+    isSecretUnlocked = true;
+    localStorage.setItem("mc_secret_unlocked", "true");
+    
+    // Play level up sound & show advancement toast
+    playLevelUpSound();
+    showAdvancement("Đã Phát Hiện Nút Bí Mật!");
+    
+    // Add visual classes to slide it up
+    secretSection.style.display = "flex";
+    setTimeout(() => {
+        secretSection.classList.add("active");
+    }, 50);
+
+    writeToChatHistory("[Hệ thống] Trục địa chấn phát hiện: Nút bấm bí ẩn đã trồi lên từ lòng đất!", "success");
+}
+
+// Global keypress listener
+document.addEventListener("keydown", (e) => {
+    if (e.key.length === 1) {
+        if (/^\d$/.test(e.key)) {
+            typedKeys += e.key;
+            if (typedKeys.length > secretSequence.length) {
+                typedKeys = typedKeys.slice(-secretSequence.length);
+            }
+            if (typedKeys === secretSequence) {
+                triggerSecretButton();
+            }
+        } else {
+            // Reset buffer if non-digit typed (prevents messy intermediate states)
+            typedKeys = "";
+        }
+    }
+});
+
+// Setup click action on the 3D button
+secretBtn.addEventListener("click", () => {
+    initAudio();
+    
+    // 3D physical press animation
+    secretBtn.classList.add("pressed");
+    playClickSound();
+    
+    setTimeout(() => {
+        secretBtn.classList.remove("pressed");
+    }, 150);
+
+    if (isSecretActivated) {
+        return;
+    }
+
+    // Activate the secret!
+    isSecretActivated = true;
+    localStorage.setItem("mc_secret_activated", "true");
+
+    // UI Updates
+    secretPlateLabel.innerText = "NÚT BÍ MẬT ĐÃ KÍCH HOẠT";
+    secretPlateLabel.classList.add("activated");
+    secretHint.innerText = "Kiểm tra Rương Bật Mí!";
+    secretHint.style.color = "#55ff55";
+
+    // Play chime & show advancement toast
+    setTimeout(() => {
+        playLevelUpSound();
+        showAdvancement("Thành Tựu: Cổ Thư Mật Tịch!");
+    }, 100);
+
+    // Populate chest slot 8
+    unlockSecretChestItem();
+
+    writeToChatHistory("[Hệ thống] Kích hoạt thành công! Bản Thảo Thứ V đã được đưa vào Rương Bật Mí.", "success");
+});
+
+// Restore State on Load
+if (isSecretUnlocked) {
+    secretSection.style.display = "flex";
+    secretSection.classList.add("active");
+}
+if (isSecretActivated) {
+    secretPlateLabel.innerText = "NÚT BÍ MẬT ĐÃ KÍCH HOẠT";
+    secretPlateLabel.classList.add("activated");
+    secretHint.innerText = "Kiểm tra Rương Bật Mí!";
+    secretHint.style.color = "#55ff55";
+    setTimeout(unlockSecretChestItem, 200);
+}
+
 // Check URL parameters for ARG codes automatically
 function checkURLParams() {
     const params = new URLSearchParams(window.location.search);
