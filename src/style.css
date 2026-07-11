@@ -1341,18 +1341,35 @@ body.glitch-scare .app-container {
 
 /* Glitched Days countdown text effect */
 .glitch-days {
-    animation: textGlitch 1.5s infinite alternate ease-in-out;
+    position: relative;
+    animation: textGlitch 0.25s infinite steps(2, end);
     color: #ff5555 !important;
     text-shadow: 2px 2px 0px #00aaaa, -2px -2px 0px #aa0000 !important;
 }
 
 @keyframes textGlitch {
-    0%, 100% { transform: skew(0deg); }
-    15% { transform: skew(-3deg); filter: blur(0.3px); }
-    30% { transform: skew(4deg); }
-    45% { transform: skew(-1deg); }
-    60% { transform: skew(2deg); filter: blur(0.1px); }
-    80% { transform: skew(-2deg); }
+    0%, 100% {
+        transform: skew(0deg) translate(0);
+        text-shadow: 2px 2px 0px #00aaaa, -2px -2px 0px #aa0000;
+    }
+    20% {
+        transform: skew(-8deg) translate(-2px, 1px);
+        text-shadow: -3px 2px 0px #00aaaa, 3px -2px 0px #aa0000;
+    }
+    40% {
+        transform: skew(10deg) translate(2px, -1px);
+        text-shadow: 3px -3px 0px #00aaaa, -3px 3px 0px #aa0000;
+        filter: hue-rotate(90deg) saturate(1.5);
+    }
+    60% {
+        transform: skew(-5deg) translate(-1px, -1px);
+        text-shadow: 1px 3px 0px #00aaaa, -1px -3px 0px #aa0000;
+    }
+    80% {
+        transform: skew(6deg) translate(3px, 2px);
+        text-shadow: -2px -2px 0px #00aaaa, 2px 2px 0px #aa0000;
+        filter: invert(0.05);
+    }
 }
 
 /* Real-time HUD Clock (Minecraft Scoreboard Style) */
@@ -1422,3 +1439,44 @@ body.glitch-scare .app-container {
     }
 }
 
+/* Mining Pickaxe Swing Styles */
+.mining-pickaxe {
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    background-image: url('/textures/items/diamond_pickaxe.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    image-rendering: pixelated;
+    pointer-events: none;
+    z-index: 50;
+    top: 40px;
+    right: 20px;
+    transform: rotate(45deg);
+    opacity: 0;
+    transform-origin: bottom left;
+    transition: opacity 0.1s ease;
+}
+
+.mining-pickaxe.active {
+    opacity: 1;
+}
+
+.mining-pickaxe.swinging {
+    animation: swingPickaxe 0.15s ease-out;
+}
+
+@keyframes swingPickaxe {
+    0% {
+        transform: rotate(60deg) translate(5px, -5px);
+    }
+    30% {
+        transform: rotate(15deg) translate(-2px, 2px);
+    }
+    50% {
+        transform: rotate(-25deg) translate(-10px, 8px);
+    }
+    100% {
+        transform: rotate(45deg) translate(0, 0);
+    }
+}

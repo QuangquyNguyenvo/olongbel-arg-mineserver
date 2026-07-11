@@ -218,8 +218,11 @@ function updateCountdown() {
     if (unlockStates.days) {
         daysSeg.classList.remove("locked");
         daysVal.classList.add("glitch-days");
-        const glitchChars = ["00", "0ø", "ø0", "0?", "?0", "Ø0", "0Ø", "0X", "X0", "§§", "??", "øø", "ØØ"];
-        if (Math.random() < 0.15) {
+        const glitchChars = [
+            "00", "0ø", "ø0", "0?", "?0", "Ø0", "0Ø", "0X", "X0", "§§", "??", "øø", "ØØ",
+            "XØ", "ØX", "█0", "0█", "░░", "▒▒", "▓▓", "§0", "0§", "☠☠", "!!", "0?", "ø?", "Ø?", "█?"
+        ];
+        if (Math.random() < 0.45) {
             daysVal.innerText = glitchChars[Math.floor(Math.random() * glitchChars.length)];
         } else {
             daysVal.innerText = "00";
@@ -574,6 +577,15 @@ mineableBlock.addEventListener("click", () => {
         return;
     }
 
+    // Trigger pickaxe swing animation
+    const pickaxe = document.getElementById("miningPickaxe");
+    if (pickaxe) {
+        pickaxe.classList.add("active");
+        pickaxe.classList.remove("swinging");
+        void pickaxe.offsetWidth; // Force reflow
+        pickaxe.classList.add("swinging");
+    }
+
     if (gameMode === "creative") {
         clicks = maxClicks;
     } else {
@@ -608,6 +620,9 @@ mineableBlock.addEventListener("click", () => {
         clickHint.innerText = `Mẹo: Click để đập khối! (${clicks}/${maxClicks})`;
     } else {
         isBroken = true;
+        if (pickaxe) {
+            pickaxe.classList.remove("active", "swinging");
+        }
         playBreakSound();
         drawCracks(0);
         
