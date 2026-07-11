@@ -1355,3 +1355,70 @@ body.glitch-scare .app-container {
     80% { transform: skew(-2deg); }
 }
 
+/* Real-time HUD Clock (Minecraft Scoreboard Style) */
+.hud-clock {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: rgba(16, 16, 16, 0.85);
+    border: 4px solid #3c3c3c;
+    outline: 4px solid #000;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    padding: 10px 14px;
+    z-index: 1000;
+    text-align: right;
+    font-family: 'VT323', monospace;
+    min-width: 140px;
+    transition: transform 0.2s ease;
+}
+
+.hud-clock:hover {
+    transform: scale(1.05);
+}
+
+.hud-clock-title {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.55rem;
+    color: #ffaa00;
+    text-shadow: 1px 1px 0px #3f2a00;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+    text-align: center;
+}
+
+.hud-clock-time {
+    font-size: 2.1rem;
+    color: #55ff55;
+    text-shadow: 2px 2px 0px #005500;
+    line-height: 1;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.hud-clock-date {
+    font-size: 1.1rem;
+    color: #aaaaaa;
+    text-shadow: 1px 1px 0px #3c3c3c;
+    margin-top: 2px;
+}
+
+/* Adjust layout on small mobile screens */
+@media (max-width: 768px) {
+    .hud-clock {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 6px 10px;
+        min-width: 110px;
+    }
+    .hud-clock-time {
+        font-size: 1.6rem;
+    }
+    .hud-clock-title {
+        font-size: 0.45rem;
+    }
+    .hud-clock-date {
+        font-size: 0.95rem;
+    }
+}
+

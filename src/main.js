@@ -1727,11 +1727,30 @@ async function syncDatabaseUnlockStates() {
     }
 }
 
+// Real-time HUD Clock updater
+function updateHUDClock() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+
+    const clockTimeEl = document.getElementById("hudClockTime");
+    const clockDateEl = document.getElementById("hudClockDate");
+
+    if (clockTimeEl) clockTimeEl.innerText = `${hours}:${minutes}:${seconds}`;
+    if (clockDateEl) clockDateEl.innerText = `${day}/${month}/${year}`;
+}
+
 // Initializations
 syncDatabaseUnlockStates();
 setTimeout(checkURLParams, 800);
 updateCountdown();
 setInterval(updateCountdown, 1000);
+updateHUDClock();
+setInterval(updateHUDClock, 1000);
 // Periodically poll for database updates every 10 seconds
 setInterval(syncDatabaseUnlockStates, 10000);
 
