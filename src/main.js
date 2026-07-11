@@ -1074,6 +1074,22 @@ async function handleCommand(cmdStr) {
             writeToChatHistory("[Hệ thống] Đã reset toàn bộ trạng thái giải mã về mặc định!", "success");
             break;
 
+        case "/devtime":
+            if (parts.length < 2 || (await sha256(parts[1])) !== "99e476afc6494eb2fc49bcd4494d57507604ca6e9b78f1a45aec347d1ae5ccab") {
+                writeToChatHistory("[Server] Sai mã bảo mật nhà phát triển!", "error");
+                return;
+            }
+            const nowTime = new Date().getTime();
+            const diffTime = targetDate - nowTime;
+
+            const d = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+            const h = Math.max(0, Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
+            const m = Math.max(0, Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60)));
+            const s = Math.max(0, Math.floor((diffTime % (1000 * 60)) / 1000));
+
+            writeToChatHistory(`[Server] Thời gian đếm ngược còn lại: ${d} ngày, ${h} giờ, ${m} phút, ${s} giây.`, "success");
+            break;
+
         case "/devunlockall":
             if (parts.length < 2 || (await sha256(parts[1])) !== "99e476afc6494eb2fc49bcd4494d57507604ca6e9b78f1a45aec347d1ae5ccab") {
                 writeToChatHistory("[Server] Sai mã bảo mật nhà phát triển!", "error");
