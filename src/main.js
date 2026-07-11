@@ -1823,6 +1823,83 @@ function updateHUDClock() {
     if (clockDateEl) clockDateEl.innerText = `${day}/${month}/${year}`;
 }
 
+// C418 Minecraft chill playlist
+const playlist = [
+    { title: "Sweden", url: "https://archive.org/download/minecraft-volume-alpha/18%20-%20C418%20-%20Sweden.mp3" },
+    { title: "Subwoofer Lullaby", url: "https://archive.org/download/minecraft-volume-alpha/03%20-%20C418%20-%20Subwoofer%20Lullaby.mp3" },
+    { title: "Wet Hands", url: "https://archive.org/download/minecraft-volume-alpha/13%20-%20C418%20-%20Wet%20Hands.mp3" },
+    { title: "Dry Hands", url: "https://archive.org/download/minecraft-volume-alpha/12%20-%20C418%20-%20Dry%20Hands.mp3" },
+    { title: "Haggstrom", url: "https://archive.org/download/minecraft-volume-alpha/07%20-%20C418%20-%20Haggstrom.mp3" },
+    { title: "Mice on Venus", url: "https://archive.org/download/minecraft-volume-alpha/11%20-%20C418%20-%20Mice%20on%20Venus.mp3" }
+];
+
+let bgMusic = null;
+let currentTrackIndex = Math.floor(Math.random() * playlist.length); // Start with a random track
+let isMusicMuted = localStorage.getItem("mc_music_muted") === "true"; // Persist user mute preference
+
+function initBGMusic() {
+    if (bgMusic) return;
+
+    bgMusic = new Audio(playlist[currentTrackIndex].url);
+    bgMusic.volume = 0.22; // Soft background volume
+    
+    bgMusic.addEventListener("ended", () => {
+        currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+        bgMusic.src = playlist[currentTrackIndex].url;
+        bgMusic.play().catch(err => console.log("Autoplay blocked:", err));
+        updateMusicUI();
+    });
+
+    // Mute state
+    bgMusic.muted = isMusicMuted;
+}
+
+function updateMusicUI() {
+    const musicBtn = document.getElementById("musicBtn");
+    const musicNowPlaying = document.getElementById("musicNowPlaying");
+    if (!musicBtn || !musicNowPlaying) return;
+
+    if (isMusicMuted) {
+        musicBtn.innerHTML = `<span class="music-icon">🔇</span> Unmute`;
+        musicBtn.classList.add("muted");
+        musicNowPlaying.innerText = "Đang tắt tiếng...";
+        musicNowPlaying.style.color = "#aaaaaa";
+    } else {
+        musicBtn.innerHTML = `<span class="music-icon">🎵</span> Mute`;
+        musicBtn.classList.remove("muted");
+        if (bgMusic && !bgMusic.paused) {
+            musicNowPlaying.innerText = `🎵 ${playlist[currentTrackIndex].title}`;
+            musicNowPlaying.style.color = "#55ff55";
+        } else {
+            musicNowPlaying.innerText = "Click để phát nhạc...";
+            musicNowPlaying.style.color = "#ffff55";
+        }
+    }
+}
+
+function toggleMusic() {
+    initBGMusic();
+    isMusicMuted = !isMusicMuted;
+    localStorage.setItem("mc_music_muted", isMusicMuted);
+    
+    if (bgMusic) {
+        bgMusic.muted = isMusicMuted;
+        if (!isMusicMuted && bgMusic.paused) {
+            bgMusic.play().catch(err => console.log("Play failed:", err));
+        }
+    }
+    updateMusicUI();
+}
+
+// Start music on first click anywhere on the page
+document.addEventListener("click", () => {
+    initBGMusic();
+    if (!isMusicMuted && bgMusic && bgMusic.paused) {
+        bgMusic.play().catch(err => console.log("Autoplay blocked:", err));
+        updateMusicUI();
+    }
+}, { once: true });
+
 // Initializations
 syncDatabaseUnlockStates();
 setTimeout(checkURLParams, 800);
@@ -1832,6 +1909,16 @@ updateHUDClock();
 setInterval(updateHUDClock, 1000);
 // Periodically poll for database updates every 10 seconds
 setInterval(syncDatabaseUnlockStates, 10000);
+
+// Initialize Music Button binding
+const musicBtnEl = document.getElementById("musicBtn");
+if (musicBtnEl) {
+    musicBtnEl.addEventListener("click", (e) => {
+        e.stopPropagation(); // Avoid triggering page-wide autoplay logic
+        toggleMusic();
+    });
+}
+updateMusicUI();
 
 // Random Splash text
 const splashTextEl = document.getElementById("splashText");

@@ -1437,6 +1437,18 @@ body.glitch-scare .app-container {
     .hud-clock-date {
         font-size: 0.95rem;
     }
+    .hud-music-container {
+        margin-top: 6px;
+        padding-top: 4px;
+    }
+    .music-btn {
+        font-size: 0.4rem;
+        padding: 2px 6px;
+    }
+    .music-now-playing {
+        font-size: 0.8rem;
+        margin-top: 4px;
+    }
 }
 
 /* Mining Pickaxe Swing Styles */
@@ -1479,4 +1491,56 @@ body.glitch-scare .app-container {
     100% {
         transform: rotate(45deg) translate(0, 0);
     }
+}
+
+/* Scoreboard Music Widget Styles */
+.hud-music-container {
+    margin-top: 10px;
+    border-top: 2px dashed #555;
+    padding-top: 8px;
+    text-align: center;
+}
+
+.music-btn {
+    background-color: #2b7a7a;
+    border: 2px solid #000;
+    box-shadow: inset -2px -2px 0px #123d3d, inset 2px 2px 0px #4ef2f2;
+    color: #e0fcfc;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.5rem;
+    padding: 4px 8px;
+    cursor: pointer;
+    text-shadow: 1px 1px 0px #0b2424;
+    transition: transform 0.1s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.music-btn:hover {
+    background-color: #3b9e9e;
+    box-shadow: inset -2px -2px 0px #1b5757, inset 2px 2px 0px #70ffff;
+}
+
+.music-btn:active {
+    transform: translateY(1px);
+}
+
+.music-btn.muted {
+    background-color: #555555;
+    box-shadow: inset -2px -2px 0px #333, inset 2px 2px 0px #888;
+    color: #ccc;
+    text-shadow: 1px 1px 0px #222;
+}
+
+.music-now-playing {
+    font-size: 0.95rem;
+    color: #ffff55;
+    text-shadow: 1px 1px 0px #333;
+    margin-top: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+    font-family: 'VT323', monospace;
 }
