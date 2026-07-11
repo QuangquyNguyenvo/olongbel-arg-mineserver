@@ -1726,6 +1726,53 @@ async function syncDatabaseUnlockStates() {
                     }
                     
                     changed = true;
+                } else if (data[segment] !== true && unlockStates[segment]) {
+                    // Sync reset/relock state back to client if database has been reset
+                    unlockStates[segment] = false;
+                    localStorage.setItem(`mc_${segment}_unlocked`, "false");
+                    
+                    // Re-lock UI
+                    const cover = document.getElementById(`${segment}-cover`);
+                    if (cover) {
+                        cover.classList.remove("broken");
+                    }
+                    const segmentElement = document.getElementById(`${segment}-segment`);
+                    if (segmentElement) {
+                        segmentElement.classList.add("locked");
+                    }
+                    
+                    // If hours segment is relocked, also relock secret section states
+                    if (segment === "hours") {
+                        isSecretUnlocked = false;
+                        isSecretActivated = false;
+                        localStorage.setItem("mc_secret_unlocked", "false");
+                        localStorage.setItem("mc_secret_activated", "false");
+                        
+                        const secretSection = document.getElementById("secretSection");
+                        if (secretSection) {
+                            secretSection.classList.remove("active");
+                            secretSection.style.display = "none";
+                        }
+                        const secretPlateLabel = document.getElementById("secretPlateLabel");
+                        if (secretPlateLabel) {
+                            secretPlateLabel.innerText = "NÚT BÍ MẬT CHƯA KÍCH HOẠT";
+                            secretPlateLabel.classList.remove("activated");
+                        }
+                        const secretHint = document.getElementById("secretHint");
+                        if (secretHint) {
+                            secretHint.innerText = "Nhấn nút để kích hoạt mật bản!";
+                            secretHint.style.color = "";
+                        }
+                        const slot8 = chestGrid.querySelector(`[data-index="8"]`);
+                        if (slot8) {
+                            slot8.classList.remove("has-item", "enchanted-glow");
+                            slot8.innerHTML = "";
+                            const newSlot8 = slot8.cloneNode(true);
+                            slot8.replaceWith(newSlot8);
+                        }
+                    }
+                    
+                    changed = true;
                 }
             });
             
