@@ -1069,8 +1069,24 @@ body {
 }
 
 /* Jumpscare Glitch Class for Body */
+body.glitch-scare-pre {
+    animation: bodyShakePre 0.4s infinite, flashRedDim 0.8s infinite;
+}
+
 body.glitch-scare {
     animation: bodyShake 0.15s infinite, flashRed 0.3s infinite;
+}
+
+@keyframes bodyShakePre {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(-2px, 1px); }
+    50% { transform: translate(1px, -2px); }
+    75% { transform: translate(-1px, -1px); }
+}
+
+@keyframes flashRedDim {
+    0%, 100% { background-color: #0b0e14; }
+    50% { background-color: #1a0000; }
 }
 
 body.glitch-scare .app-container {

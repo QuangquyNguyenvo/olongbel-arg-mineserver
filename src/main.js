@@ -14,6 +14,8 @@ const soundFiles = {
     creeperFuse: '/sounds/fuse.ogg',
     challengeComplete: '/sounds/challenge_complete.ogg',
     dragonDeath: '/sounds/dragon_death.ogg',
+    cave1: '/sounds/cave1.ogg',
+    cave10: '/sounds/cave10.ogg',
 };
 
 // Web Audio API context, kept only for the custom Herobrine jumpscare rumble
@@ -255,7 +257,12 @@ function updateCountdown() {
         secondsSeg.classList.add("locked");
     }
 
-    if (diff <= 0 && checkAllUnlocked()) {
+    const allSolved = unlockStates.hours && unlockStates.minutes && unlockStates.seconds;
+    if (diff <= 0) {
+        if (!allSolved && localStorage.getItem("mc_timeout_webhook_sent") !== "true") {
+            localStorage.setItem("mc_timeout_webhook_sent", "true");
+            sendDiscordWebhook(null, false, true);
+        }
         document.querySelector(".panel-header").innerText = "MÁY CHỦ ĐÃ MỞ CỬA!";
         xpFill.style.width = "100%";
         xpLevel.innerText = "0";
@@ -739,7 +746,7 @@ function animateSegmentBreak(segment) {
 
 // Function to send congratulatory message to Discord Webhook
 // Function to send congratulatory message to Discord Webhook
-function sendDiscordWebhook(segment, isEpic = false) {
+function sendDiscordWebhook(segment, isEpic = false, isTimeout = false) {
     const webhookUrl = "https://discord.com/api/webhooks/1522847264995807305/13yUnTqoovGrNPZc3X0Efgl2tD_7LbuYXtLNm4Na_35U6nqc32UsT-fj0Fs6tErUrvxB";
     
     const segmentColors = {
@@ -758,7 +765,68 @@ function sendDiscordWebhook(segment, isEpic = false) {
 
     let payload;
 
-    if (isEpic) {
+    if (isTimeout) {
+        payload = {
+            username: "OlongBell Server Announcer",
+            avatar_url: "https://i.imgur.com/8Q8pY7W.png",
+            embeds: [
+                {
+                    title: "⏰ THỜI GIAN ĐÃ ĐIỂM: TIẾT LỘ THÔNG TIN MÁY CHỦ! ⏰",
+                    description: `⏳ **Thời gian đếm ngược đã kết thúc!** Mặc dù các manh mối chưa được giải mã hoàn chỉnh, máy chủ **OlongBell Server** vẫn chính thức mở cửa để đón chào tất cả mọi người!`,
+                    color: 16733952, // Orange/Gold
+                    fields: [
+                        {
+                            name: "🔓 Trạng Thế Tổng Thể",
+                            value: "🔴 CHƯA HOÀN THÀNH (Hết giờ)",
+                            inline: true
+                        },
+                        {
+                            name: "🎮 Tình Trạng Máy Chủ",
+                            value: "⚡ TỰ ĐỘNG KHỞI CHẠY",
+                            inline: true
+                        },
+                        {
+                            name: "🌍 Thông điệp",
+                            value: "Cảm ơn các nhà thám hiểm đã tham gia cuộc truy tìm manh mối! Cho dù thử thách chưa được chinh phục hoàn toàn, cánh cổng OlongBell đã mở ra. Hãy tham gia ngay cùng cộng đồng!",
+                            inline: false
+                        }
+                    ],
+                    footer: {
+                        text: "OLONGBELLSERVER",
+                        icon_url: "https://i.imgur.com/8Q8pY7W.png"
+                    },
+                    timestamp: new Date().toISOString()
+                },
+                {
+                    title: "🎮 KẾT NỐI NGAY: HÀNH TRÌNH BẮT ĐẦU! 🎮",
+                    description: `
+🌟 **Chào mừng các nhà thám hiểm đến với OlongBell Server!** 🌟
+
+Cánh cổng dẫn tới thế giới sinh tồn cực hạn đã chính thức khai mở. Dưới đây là thông tin chi tiết giúp bạn kết nối và tham gia cùng cộng đồng ngay hôm nay:
+
+⚡ **ĐỊA CHỈ IP KẾT NỐI**
+  ✦ IP Chính thức: \`36.raumasmp.online\`
+  ✦ IP Dự phòng: \`onglongbel.raumasmp.online\`
+
+🛠️ **PHIÊN BẢN HỖ TRỢ**
+  ✦ Phiên bản: \`26.2 Fabric\`
+  *(Khuyến khích cài đặt để trải nghiệm tính năng Voice Chat trực tiếp cực đỉnh trong game!)*
+
+🌏 **MÁY CHỦ VẬT LÝ**
+  ✦ Vị trí: Hồ Chí Minh City (Băng thông cao, ping cực mượt ~5ms)
+
+📖 **HƯỚNG DẪN THAM GIA**
+  ✦ Bạn là người chơi mới? Hãy xem ngay hướng dẫn chi tiết cách cài đặt game và voice chat tại đây:
+  👉 [Xem Video Hướng Dẫn Tham Gia Máy Chủ](https://www.youtube.com/watch?v=sAs28-UqE-M&t=1s)
+`,
+                    color: 16733952,
+                    image: {
+                        url: "https://cdn.discordapp.com/attachments/1517927699123933325/1525114614445117502/content.png?ex=6a52352b&is=6a50e3ab&hm=b8e6a4b8a23b152ef9816beebe5a090f5671ec2031735ffbf9582ca6478bc174&"
+                    }
+                }
+            ]
+        };
+    } else if (isEpic) {
         payload = {
             username: "OlongBell Server Announcer",
             avatar_url: "https://i.imgur.com/8Q8pY7W.png",
@@ -1121,45 +1189,107 @@ function triggerHerobrineScare() {
     if (isGlitched) return;
     isGlitched = true;
 
-    // Play the terrifying jumpscare screech sound
-    playJumpscareSound();
+    // Phase 1: Interception
+    playSound('cave10', { volume: 1.0 });
+    writeToChatHistory("§4[Hệ thống] CẢNH BÁO BẢO MẬT: Phát hiện hoạt động can thiệp trái phép từ thực thể vô danh...", "error");
     
-    // Show fullscreen jumpscare face
-    const jumpscareOverlay = document.getElementById("jumpscareOverlay");
-    if (jumpscareOverlay) {
-        jumpscareOverlay.classList.add("active");
-    }
+    // Slight screen shake
+    document.body.classList.add("glitch-scare-pre");
     
-    document.body.classList.add("glitch-scare");
-    const eyes = document.getElementById("herobrineEyes");
-    eyes.classList.add("visible");
+    // Corrupt the countdown values
+    const daysVal = document.getElementById("days");
+    const hoursVal = document.getElementById("hours");
+    const minutesVal = document.getElementById("minutes");
+    const secondsVal = document.getElementById("seconds");
     
-    const splash = document.getElementById("splashText");
-    const origSplash = splash.innerText;
-    splash.innerText = "H E R O B R I N E   I S   W A T C H I N G";
-    splash.style.color = "#ff5555";
-    splash.style.animation = "none";
-    splash.style.fontSize = "1.5rem"; 
-
-    writeToChatHistory("§4[Hệ thống] Herobrine đã xâm nhập vào trang web của bạn...", "error");
-
-    // Hide jumpscare overlay after 1.5 seconds, but keep the glitch-scare state for atmosphere
+    const origDays = daysVal ? daysVal.innerText : "00";
+    const origHours = hoursVal ? hoursVal.innerText : "00";
+    const origMinutes = minutesVal ? minutesVal.innerText : "00";
+    const origSeconds = secondsVal ? secondsVal.innerText : "00";
+    
     setTimeout(() => {
+        if (daysVal) daysVal.innerText = "66";
+        if (hoursVal) hoursVal.innerText = "6";
+        if (minutesVal) minutesVal.innerText = "6";
+        if (secondsVal) secondsVal.innerText = "6";
+        playSound('cave1', { volume: 1.0 });
+        
+        writeToChatHistory("§4[Hệ thống] LỖI: Quyền điều khiển server đã bị tước đoạt bởi Herobrine.", "error");
+    }, 1000);
+
+    setTimeout(() => {
+        writeToChatHistory("§4[Chat] Herobrine: Cảm ơn vì đã cấp quyền OP cho ta...", "error");
+    }, 2200);
+
+    setTimeout(() => {
+        writeToChatHistory("§4[Server] Herobrine đã thực hiện lệnh: /gamemode survival @a", "error");
+        writeToChatHistory("§4[Server] Herobrine đã thực hiện lệnh: /kill @a", "error");
+    }, 3200);
+
+    // Phase 2: Screaming Jumpscare
+    setTimeout(() => {
+        document.body.classList.remove("glitch-scare-pre");
+        document.body.classList.add("glitch-scare");
+        
+        // Change document title
+        const origTitle = document.title;
+        document.title = "H E L P   M E";
+        
+        // Show fullscreen jumpscare face
+        const jumpscareOverlay = document.getElementById("jumpscareOverlay");
         if (jumpscareOverlay) {
-            jumpscareOverlay.classList.remove("active");
+            jumpscareOverlay.classList.add("active");
         }
-    }, 1500);
+        
+        // Play jumpscare sounds (screech + dragon death for maximum impact)
+        playJumpscareSound();
+        playSound('dragonDeath', { volume: 0.8 });
+        
+        const eyes = document.getElementById("herobrineEyes");
+        if (eyes) eyes.classList.add("visible");
+        
+        const splash = document.getElementById("splashText");
+        const origSplash = splash ? splash.innerText : "";
+        if (splash) {
+            splash.innerText = "H E R O B R I N E   I S   W A T C H I N G";
+            splash.style.color = "#ff5555";
+            splash.style.animation = "none";
+            splash.style.fontSize = "1.5rem"; 
+        }
 
-    setTimeout(() => {
-        document.body.classList.remove("glitch-scare");
-        eyes.classList.remove("visible");
-        splash.innerText = origSplash;
-        splash.style.color = "#ffff55";
-        splash.style.animation = "splashPulse 0.5s infinite alternate ease-in-out";
-        splash.style.fontSize = "1.45rem";
-        isGlitched = false;
-        writeToChatHistory("[Server] Herobrine đã rời đi. Hệ thống đã được khôi phục.", "system");
-    }, 4500);
+        // Hide jumpscare overlay after 2 seconds, but keep screen pitch dark / eyes showing
+        setTimeout(() => {
+            if (jumpscareOverlay) {
+                jumpscareOverlay.classList.remove("active");
+            }
+        }, 2000);
+
+        // Phase 3: Recover
+        setTimeout(() => {
+            document.body.classList.remove("glitch-scare");
+            if (eyes) eyes.classList.remove("visible");
+            document.title = origTitle;
+            
+            if (splash) {
+                splash.innerText = origSplash;
+                splash.style.color = "#ffff55";
+                splash.style.animation = "splashPulse 0.5s infinite alternate ease-in-out";
+                splash.style.fontSize = "1.45rem";
+            }
+            
+            // Restore timer
+            if (daysVal) daysVal.innerText = origDays;
+            if (hoursVal) hoursVal.innerText = origHours;
+            if (minutesVal) minutesVal.innerText = origMinutes;
+            if (secondsVal) secondsVal.innerText = origSeconds;
+            
+            playSound('levelUp', { volume: 0.5 });
+            writeToChatHistory("[Server] Hệ thống được khôi phục khẩn cấp hoàn tất. Đã thu hồi quyền OP của Herobrine.", "system");
+            writeToChatHistory("[Server] Lưu ý: Dấu vết của thực thể vẫn còn trong cơ sở dữ liệu.", "info");
+            
+            isGlitched = false;
+        }, 6000); 
+    }, 3800);
 }
 
 // Creeper Hiss Easter Egg hover logic
