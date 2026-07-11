@@ -1,0 +1,10 @@
+{
+  "name": "minecowdown",
+  "pages_build_output_dir": "dist",
+  "kv_namespaces": [
+    {
+      "binding": "DATABASE",
+      "id": "233bf9d573eb43e3adaade24ed001583"
+    }
+  ]
+}

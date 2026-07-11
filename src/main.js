@@ -730,6 +730,15 @@ function animateSegmentBreak(segment) {
         localStorage.setItem(`mc_${segment}_unlocked`, "true");
         updateCountdown();
 
+        // Save unlock state to database
+        fetch("/api/unlock", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ segment })
+        }).catch(err => console.error("Failed to save unlock state to database:", err));
+
         const allSolved = unlockStates.hours && unlockStates.minutes && unlockStates.seconds;
 
         if (allSolved) {
@@ -805,8 +814,7 @@ function sendDiscordWebhook(segment, isEpic = false, isTimeout = false) {
 Cánh cổng dẫn tới thế giới sinh tồn cực hạn đã chính thức khai mở. Dưới đây là thông tin chi tiết giúp bạn kết nối và tham gia cùng cộng đồng ngay hôm nay:
 
 ⚡ **ĐỊA CHỈ IP KẾT NỐI**
-  ✦ IP Chính thức: \`36.raumasmp.online\`
-  ✦ IP Dự phòng: \`onglongbel.raumasmp.online\`
+  ✦ Địa chỉ IP: \`onglongbel.raumasmp.online\`
 
 🛠️ **PHIÊN BẢN HỖ TRỢ**
   ✦ Phiên bản: \`26.2 Fabric\`
@@ -869,8 +877,7 @@ Cánh cổng dẫn tới thế giới sinh tồn cực hạn đã chính thức 
 Cánh cổng dẫn tới thế giới sinh tồn cực hạn đã chính thức khai mở. Dưới đây là thông tin chi tiết giúp bạn kết nối và tham gia cùng cộng đồng ngay hôm nay:
 
 ⚡ **ĐỊA CHỈ IP KẾT NỐI**
-  ✦ IP Chính thức: \`36.raumasmp.online\`
-  ✦ IP Dự phòng: \`onglongbel.raumasmp.online\`
+  ✦ Địa chỉ IP: \`onglongbel.raumasmp.online\`
 
 🛠️ **PHIÊN BẢN HỖ TRỢ**
   ✦ Phiên bản: \`26.2 Fabric\`
@@ -1013,6 +1020,11 @@ async function handleCommand(cmdStr) {
             localStorage.setItem("mc_minutes_unlocked", "false");
             localStorage.setItem("mc_seconds_unlocked", "false");
             
+            // Reset database
+            fetch("/api/reset", {
+                method: "POST"
+            }).catch(err => console.error("Failed to reset database:", err));
+            
             // Reset secret section states
             isSecretUnlocked = false;
             isSecretActivated = false;
@@ -1072,6 +1084,14 @@ async function handleCommand(cmdStr) {
             ["hours", "minutes", "seconds"].forEach(seg => {
                 unlockStates[seg] = true;
                 localStorage.setItem(`mc_${seg}_unlocked`, "true");
+                
+                // Save to database
+                fetch("/api/unlock", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ segment: seg })
+                }).catch(err => console.error("Failed to save devunlock state:", err));
+
                 const cover = document.getElementById(`${seg}-cover`);
                 if (cover) {
                     cover.classList.remove("shaking");
@@ -1625,10 +1645,50 @@ function checkURLParams() {
     });
 }
 
+// Sync unlock states with the database
+async function syncDatabaseUnlockStates() {
+    try {
+        const res = await fetch("/api/unlock");
+        if (res.ok) {
+            const data = await res.json();
+            let changed = false;
+            
+            ["hours", "minutes", "seconds"].forEach(segment => {
+                if (data[segment] === true && !unlockStates[segment]) {
+                    unlockStates[segment] = true;
+                    localStorage.setItem(`mc_${segment}_unlocked`, "true");
+                    
+                    // Update UI cover status immediately
+                    const cover = document.getElementById(`${segment}-cover`);
+                    if (cover) {
+                        cover.classList.remove("shaking");
+                        cover.classList.add("broken");
+                    }
+                    const segmentElement = document.getElementById(`${segment}-segment`);
+                    if (segmentElement) {
+                        segmentElement.classList.remove("locked");
+                    }
+                    
+                    changed = true;
+                }
+            });
+            
+            if (changed) {
+                updateCountdown();
+            }
+        }
+    } catch (err) {
+        console.error("Failed to sync unlock states from database:", err);
+    }
+}
+
 // Initializations
+syncDatabaseUnlockStates();
 setTimeout(checkURLParams, 800);
 updateCountdown();
 setInterval(updateCountdown, 1000);
+// Periodically poll for database updates every 10 seconds
+setInterval(syncDatabaseUnlockStates, 10000);
 
 // Random Splash text
 const splashTextEl = document.getElementById("splashText");
