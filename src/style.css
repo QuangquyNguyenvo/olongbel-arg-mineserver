@@ -1544,3 +1544,52 @@ body.glitch-scare .app-container {
     max-width: 150px;
     font-family: 'VT323', monospace;
 }
+
+/* ARG World Link Button */
+.arg-world-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background-color: #4a4a4a;
+    border: 2px solid #000;
+    box-shadow: inset -3px -3px 0px #2a2a2a, inset 3px 3px 0px #7f7f7f;
+    color: #ffffff;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.75rem;
+    text-decoration: none;
+    text-shadow: 2px 2px 0px #222222;
+    cursor: pointer;
+    transition: transform 0.1s ease, background-color 0.1s ease;
+    image-rendering: pixelated;
+}
+
+.arg-world-btn:hover {
+    background-color: #5c5c5c;
+    box-shadow: inset -3px -3px 0px #3c3c3c, inset 3px 3px 0px #9f9f9f;
+    color: #ffff55;
+    text-shadow: 2px 2px 0px #3f3f11;
+}
+
+.arg-world-btn:active {
+    transform: translateY(2px);
+    box-shadow: inset 3px 3px 0px #2a2a2a, inset -3px -3px 0px #7f7f7f;
+}
+
+.arg-world-btn .btn-icon {
+    font-size: 1.1rem;
+}
+
+/* Adjust layout on small mobile screens */
+@media (max-width: 768px) {
+    .arg-world-btn {
+        bottom: 12px;
+        right: 12px;
+        padding: 8px 12px;
+        font-size: 0.6rem;
+    }
+}
