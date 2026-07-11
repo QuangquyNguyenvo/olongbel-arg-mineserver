@@ -1134,11 +1134,22 @@ async function handleCommand(cmdStr) {
             break;
 
         case "/unlock":
-            if (parts.length < 3) {
+            if (parts.length < 2) {
                 writeToChatHistory("Cú pháp: /unlock <days|hours|minutes|seconds> <mã_arg>", "error");
                 return;
             }
             const segment = parts[1].toLowerCase();
+
+            if (segment === "days") {
+                writeToChatHistory("[Server] Trục thời gian ghi nhận: Phân khúc 'days' đã mở khóa từ trước bởi một thế lực vô hình...", "warning");
+                writeToChatHistory("[Server] Nhưng hãy tự hỏi... Liệu con số '00 ngày' đang hiển thị kia có phản ánh đúng thực tại, hay dòng thời gian đã bị bẻ cong từ lâu?", "error");
+                return;
+            }
+
+            if (parts.length < 3) {
+                writeToChatHistory("Cú pháp: /unlock <days|hours|minutes|seconds> <mã_arg>", "error");
+                return;
+            }
             const inputCode = parts[2];
 
             if (!codes[segment]) {
