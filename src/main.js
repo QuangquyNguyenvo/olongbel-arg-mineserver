@@ -157,7 +157,7 @@ const splashTexts = [
 ];
 
 // Target opening date
-const targetDate = new Date("2026-07-11T19:30:00+07:00").getTime();
+const targetDate = new Date("2026-07-11T20:00:00+07:00").getTime();
 const startDate = new Date("2026-07-01T21:00:00+07:00").getTime();
 const totalDuration = targetDate - startDate;
 
@@ -1080,35 +1080,41 @@ async function handleCommand(cmdStr) {
                 return;
             }
             
-            // Unlock all segment locks
-            ["hours", "minutes", "seconds"].forEach(seg => {
-                unlockStates[seg] = true;
-                localStorage.setItem(`mc_${seg}_unlocked`, "true");
-                
-                // Save to database
-                fetch("/api/unlock", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ segment: seg })
-                }).catch(err => console.error("Failed to save devunlock state:", err));
+            // Unlock all segment locks sequentially to preserve dependency order
+            (async () => {
+                const segs = ["seconds", "minutes", "hours"];
+                for (const seg of segs) {
+                    unlockStates[seg] = true;
+                    localStorage.setItem(`mc_${seg}_unlocked`, "true");
+                    
+                    const cover = document.getElementById(`${seg}-cover`);
+                    if (cover) {
+                        cover.classList.remove("shaking");
+                        cover.classList.add("broken");
+                    }
+                    const segmentElement = document.getElementById(`${seg}-segment`);
+                    if (segmentElement) {
+                        segmentElement.classList.remove("locked");
+                    }
 
-                const cover = document.getElementById(`${seg}-cover`);
-                if (cover) {
-                    cover.classList.remove("shaking");
-                    cover.classList.add("broken");
+                    try {
+                        await fetch("/api/unlock", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ segment: seg })
+                        });
+                    } catch (err) {
+                        console.error("Failed to save devunlock state:", err);
+                    }
                 }
-                const segmentElement = document.getElementById(`${seg}-segment`);
-                if (segmentElement) {
-                    segmentElement.classList.remove("locked");
-                }
-            });
-            
-            updateCountdown();
-            
-            // Show ultimate completion event
-            showAdvancement("THÀNH TỰU TỐI CAO: GIẢI MÃ TOÀN BỘ THỜI GIAN!", 'dragonDeath');
-            writeToChatHistory(`[Server] 🎉 ĐÃ MỞ KHÓA TOÀN BỘ CÁC MẢNH GHÉP THỜI GIAN QUA LỆNH ADMIN! 🎉`, "success");
-            sendDiscordWebhook("seconds", true); // Send epic webhook
+                
+                updateCountdown();
+                
+                // Show ultimate completion event
+                showAdvancement("THÀNH TỰU TỐI CAO: GIẢI MÃ TOÀN BỘ THỜI GIAN!", 'dragonDeath');
+                writeToChatHistory(`[Server] 🎉 ĐÃ MỞ KHÓA TOÀN BỘ CÁC MẢNH GHÉP THỜI GIAN QUA LỆNH ADMIN! 🎉`, "success");
+                sendDiscordWebhook("seconds", true); // Send epic webhook
+            })();
             break;
 
         case "/unlock":
@@ -1126,6 +1132,16 @@ async function handleCommand(cmdStr) {
 
             if (unlockStates[segment]) {
                 writeToChatHistory(`Mục '${segment}' đã được giải mã trước đó rồi!`, "info");
+                return;
+            }
+
+            // Enforce sequential solving: seconds -> minutes -> hours
+            if (segment === "minutes" && !unlockStates.seconds) {
+                writeToChatHistory("[Server] Khóa 'seconds' (giây) chưa được giải mã! Hãy giải mã 'seconds' trước.", "error");
+                return;
+            }
+            if (segment === "hours" && !unlockStates.minutes) {
+                writeToChatHistory("[Server] Khóa 'minutes' (phút) chưa được giải mã! Hãy giải mã 'minutes' trước.", "error");
                 return;
             }
 
@@ -1566,6 +1582,12 @@ document.addEventListener("keydown", (e) => {
                 typedKeys = typedKeys.slice(-secretSequence.length);
             }
             if (typedKeys === secretSequence) {
+                // The secret sequence is for hours. Enforce minutes must be unlocked first.
+                if (!unlockStates.minutes) {
+                    writeToChatHistory("[Hệ thống] Trục địa chấn phát ra tiếng động lạ... Nhưng dường như các khóa trước chưa được giải mã hoàn toàn.", "error");
+                    typedKeys = "";
+                    return;
+                }
                 triggerSecretButton();
                 if (!unlockStates.hours) {
                     animateSegmentBreak("hours");
@@ -1637,6 +1659,13 @@ function checkURLParams() {
     Object.keys(codes).forEach(segment => {
         const paramVal = params.get(segment);
         if (paramVal && paramVal === codes[segment] && !unlockStates[segment]) {
+            // Enforce sequential solving: seconds -> minutes -> hours
+            if (segment === "minutes" && !unlockStates.seconds) {
+                return;
+            }
+            if (segment === "hours" && !unlockStates.minutes) {
+                return;
+            }
             unlockedAny = true;
             setTimeout(() => {
                 animateSegmentBreak(segment);

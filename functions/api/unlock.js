@@ -40,6 +40,25 @@ export async function onRequestPost(context) {
         return new Response("Invalid segment", { status: 400 });
     }
     
+    // Enforce sequential solving: seconds -> minutes -> hours
+    if (segment === "minutes") {
+        const secondsUnlocked = await db.get("seconds") === "true";
+        if (!secondsUnlocked) {
+            return new Response(JSON.stringify({ error: "Seconds must be unlocked first" }), {
+                status: 400,
+                headers: { "Content-Type": "application/json" }
+            });
+        }
+    } else if (segment === "hours") {
+        const minutesUnlocked = await db.get("minutes") === "true";
+        if (!minutesUnlocked) {
+            return new Response(JSON.stringify({ error: "Minutes must be unlocked first" }), {
+                status: 400,
+                headers: { "Content-Type": "application/json" }
+            });
+        }
+    }
+    
     await db.put(segment, "true");
     
     return new Response(JSON.stringify({ success: true }), {
