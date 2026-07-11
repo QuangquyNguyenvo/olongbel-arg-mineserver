@@ -70,6 +70,39 @@ function playWoodClickSound() {
     playSound('hitWood', { volume: 0.45, rateJitter: 0.1 });
 }
 
+// Synthesize Minecraft Firework Blast Sound
+function playFireworkExplosionSound() {
+    initAudio();
+    if (!audioCtx) return;
+    
+    const now = audioCtx.currentTime;
+    const bufferSize = audioCtx.sampleRate * 0.35; // 0.35 seconds
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+    }
+    
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+    
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(600, now);
+    filter.Q.setValueAtTime(1.5, now);
+    filter.frequency.exponentialRampToValueAtTime(80, now + 0.3);
+    
+    const gainNode = audioCtx.createGain();
+    gainNode.gain.setValueAtTime(0.3, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+    
+    noise.connect(filter);
+    filter.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    noise.start(now);
+}
+
 // Synthesize Herobrine Scary Ambient Rumble Sound
 function playScarySound() {
     initAudio();
@@ -269,6 +302,7 @@ function updateCountdown() {
         document.querySelector(".panel-header").innerText = "MÁY CHỦ ĐÃ MỞ CỬA!";
         xpFill.style.width = "100%";
         xpLevel.innerText = "0";
+        triggerCelebration();
         return;
     }
 
@@ -284,6 +318,40 @@ function updateCountdown() {
     if (unlockStates.minutes) level += 3;
     if (unlockStates.seconds) level += 5;
     xpLevel.innerText = level;
+}
+
+let celebrationTriggered = false;
+let celebrationInterval = null;
+
+function triggerCelebration() {
+    if (celebrationTriggered) return;
+    celebrationTriggered = true;
+    
+    // Play sound combo
+    playSound('challengeComplete', { volume: 0.7 });
+    
+    setTimeout(() => {
+        playSound('dragonDeath', { volume: 0.6 });
+    }, 600);
+
+    // Play experience collection chime sound sequence
+    for (let i = 0; i < 20; i++) {
+        setTimeout(() => {
+            playSound('levelUp', { volume: 0.45, rateJitter: 0.12 });
+        }, 1200 + i * 250);
+    }
+
+    // Continuously spawn firework rockets
+    celebrationInterval = setInterval(() => {
+        const x = Math.random() * canvas.width;
+        particles.push(new Particle(x, canvas.height, 'firework-rocket'));
+    }, 700);
+
+    // Show congrats message below XP Bar
+    const congratsEl = document.getElementById("congratsMessage");
+    if (congratsEl) {
+        congratsEl.classList.add("visible");
+    }
 }
 
 // Particle System setup
@@ -333,6 +401,22 @@ class Particle {
             this.size = Math.random() * 5 + 4;
             this.color = color || '#22143d';
             this.gravity = 0.25;
+        } else if (type === 'firework-rocket') {
+            this.vx = (Math.random() - 0.5) * 1.5;
+            this.vy = -(Math.random() * 7 + 10);
+            this.maxLife = Math.random() * 30 + 35;
+            this.size = 3;
+            this.color = '#cccccc';
+        } else if (type === 'firework-spark') {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 5 + 2.5;
+            this.vx = Math.cos(angle) * speed;
+            this.vy = Math.sin(angle) * speed;
+            this.maxLife = Math.random() * 30 + 30;
+            this.size = Math.random() * 3 + 2;
+            this.color = color; // Exploded rocket color
+            this.gravity = 0.08;
+            this.friction = 0.98;
         }
     }
 
@@ -344,10 +428,23 @@ class Particle {
         if (this.gravity) {
             this.vy += this.gravity;
         }
+        if (this.friction) {
+            this.vx *= this.friction;
+            this.vy *= this.friction;
+        }
         
         if (this.type === 'portal') {
             this.angle += this.va;
             this.size = Math.max(0.1, this.size * 0.985);
+        } else if (this.type === 'firework-rocket') {
+            // Spawn trailing smoke
+            if (Math.random() < 0.6) {
+                const smoke = new Particle(this.x, this.y, 'portal', '#aaaaaa');
+                smoke.maxLife = 15;
+                smoke.vx = (Math.random() - 0.5) * 0.5;
+                smoke.vy = (Math.random() * 0.5);
+                particles.push(smoke);
+            }
         }
     }
 
@@ -377,6 +474,8 @@ class Particle {
             ctx.fill();
         } else if (this.type === 'block-break') {
             ctx.fillRect(this.x - this.size/2, this.y - this.size/2, this.size, this.size);
+        } else if (this.type === 'firework-rocket' || this.type === 'firework-spark') {
+            ctx.fillRect(this.x - this.size/2, this.y - this.size/2, this.size, this.size);
         }
         
         ctx.restore();
@@ -396,6 +495,15 @@ function handleParticles() {
         particles[i].draw();
 
         if (particles[i].life >= particles[i].maxLife) {
+            if (particles[i].type === 'firework-rocket') {
+                const colors = ['#ff5555', '#55ff55', '#ffff55', '#55ffff', '#ff55ff', '#ffaa00', '#ffffff', '#ffaaaa', '#aaffaa'];
+                const burstColor = colors[Math.floor(Math.random() * colors.length)];
+                const particleCount = Math.floor(Math.random() * 20) + 40;
+                for (let j = 0; j < particleCount; j++) {
+                    particles.push(new Particle(particles[i].x, particles[i].y, 'firework-spark', burstColor));
+                }
+                playFireworkExplosionSound();
+            }
             particles.splice(i, 1);
             i--;
         }
@@ -1024,6 +1132,17 @@ async function handleCommand(cmdStr) {
                 writeToChatHistory("[Server] Sai mã bảo mật nhà phát triển!", "error");
                 return;
             }
+            // Reset celebration state
+            celebrationTriggered = false;
+            if (celebrationInterval) {
+                clearInterval(celebrationInterval);
+                celebrationInterval = null;
+            }
+            const congratsEl = document.getElementById("congratsMessage");
+            if (congratsEl) {
+                congratsEl.classList.remove("visible");
+            }
+
             // Reset unlock states
             unlockStates.days = true; // Always stays true (glitched launch day today)
             unlockStates.hours = false;

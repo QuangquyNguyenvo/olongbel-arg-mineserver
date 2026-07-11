@@ -1593,3 +1593,55 @@ body.glitch-scare .app-container {
         font-size: 0.6rem;
     }
 }
+
+/* Congratulatory message when countdown ends */
+.congrats-message {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 1s ease-in-out;
+    margin-top: 0px;
+    text-align: center;
+}
+
+.congrats-message.visible {
+    opacity: 1;
+    max-height: 150px;
+    margin-top: 20px;
+    animation: bounceCongrats 1s ease-out forwards;
+}
+
+.congrats-title {
+    font-family: 'Press Start 2P', cursive;
+    color: #ffff55;
+    font-size: 1.2rem;
+    text-shadow: 2px 2px 0px #3f3f00, -2px -2px 0px #000;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+    animation: colorPulse 1s infinite alternate;
+}
+
+.congrats-subtitle {
+    font-family: 'VT323', monospace;
+    color: #55ff55;
+    font-size: 1.5rem;
+    text-shadow: 2px 2px 0px #005500;
+}
+
+@keyframes bounceCongrats {
+    0% {
+        transform: scale(0.5);
+    }
+    70% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1.0);
+    }
+}
+
+@keyframes colorPulse {
+    0% { color: #ffff55; text-shadow: 2px 2px 0px #3f3f00; }
+    50% { color: #ffaa00; text-shadow: 2px 2px 0px #3f2a00; }
+    100% { color: #ffff55; text-shadow: 2px 2px 0px #3f3f00; }
+}
