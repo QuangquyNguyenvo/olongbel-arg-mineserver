@@ -47,7 +47,7 @@ function playClickSound() {
 }
 
 function playHitSound() {
-    playSound('hitStone', { volume: 0.4, rateJitter: 0.12 });
+    playSound('breakStone', { volume: 0.45, rateJitter: 0.12 });
 }
 
 function playBreakSound() {

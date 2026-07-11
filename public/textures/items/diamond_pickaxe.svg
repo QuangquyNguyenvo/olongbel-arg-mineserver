@@ -1,6 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="64" height="64" style="image-rendering: pixelated;">
   <!-- Handle (stick) -->
-  <rect x="1" y="14" width="1" height="1" fill="#4d2600" />
   <rect x="2" y="13" width="1" height="1" fill="#4d2600" />
   <rect x="3" y="12" width="1" height="1" fill="#4d2600" />
   <rect x="4" y="11" width="1" height="1" fill="#4d2600" />
@@ -10,57 +9,54 @@
   <rect x="8" y="7" width="1" height="1" fill="#4d2600" />
   <rect x="9" y="6" width="1" height="1" fill="#4d2600" />
   <rect x="10" y="5" width="1" height="1" fill="#4d2600" />
-  <rect x="11" y="4" width="1" height="1" fill="#8c5828" />
 
-  <!-- Shadow highlights on stick -->
+  <!-- Stick highlights -->
+  <rect x="3" y="13" width="1" height="1" fill="#8c5828" />
+  <rect x="4" y="12" width="1" height="1" fill="#8c5828" />
+  <rect x="5" y="11" width="1" height="1" fill="#8c5828" />
+  <rect x="6" y="10" width="1" height="1" fill="#8c5828" />
+  <rect x="7" y="9" width="1" height="1" fill="#8c5828" />
+  <rect x="8" y="8" width="1" height="1" fill="#8c5828" />
+  <rect x="9" y="7" width="1" height="1" fill="#8c5828" />
+  <rect x="10" y="6" width="1" height="1" fill="#8c5828" />
+  <rect x="11" y="5" width="1" height="1" fill="#8c5828" />
+  <rect x="1" y="14" width="1" height="1" fill="#2d1600" />
   <rect x="2" y="14" width="1" height="1" fill="#2d1600" />
-  <rect x="3" y="13" width="1" height="1" fill="#2d1600" />
-  <rect x="4" y="12" width="1" height="1" fill="#2d1600" />
-  <rect x="5" y="11" width="1" height="1" fill="#2d1600" />
-  <rect x="6" y="10" width="1" height="1" fill="#2d1600" />
-  <rect x="7" y="9" width="1" height="1" fill="#2d1600" />
-  <rect x="8" y="8" width="1" height="1" fill="#2d1600" />
-  <rect x="9" y="7" width="1" height="1" fill="#2d1600" />
-  <rect x="10" y="6" width="1" height="1" fill="#2d1600" />
 
-  <!-- Iron/Gold coupling/holder -->
-  <rect x="11" y="5" width="1" height="1" fill="#555555" />
-  <rect x="12" y="4" width="1" height="1" fill="#888888" />
-  <rect x="10" y="4" width="1" height="1" fill="#333333" />
-  <rect x="12" y="3" width="1" height="1" fill="#333333" />
-
-  <!-- Diamond Pickaxe Head -->
-  <!-- Center top -->
-  <rect x="13" y="2" width="1" height="1" fill="#55ffff" />
-  <rect x="12" y="2" width="1" height="1" fill="#33cccc" />
-  <rect x="13" y="3" width="1" height="1" fill="#33cccc" />
+  <!-- Iron Fitting in center -->
+  <rect x="11" y="4" width="1" height="1" fill="#3c3c3c" />
+  <rect x="12" y="3" width="1" height="1" fill="#7a7a7a" />
   
-  <!-- Left wing -->
+  <!-- Diamond Pickaxe Head (Minecraft Palette: #55ffff (Cyan), #33cccc (Dark Cyan), #157e7e (Border), #ffffff (Highlight)) -->
+  <!-- Border / Dark Edge -->
+  <rect x="11" y="2" width="1" height="1" fill="#003333" />
+  <rect x="10" y="2" width="1" height="1" fill="#003333" />
+  <rect x="9" y="2" width="1" height="1" fill="#003333" />
+  <rect x="8" y="3" width="1" height="1" fill="#003333" />
+  <rect x="7" y="4" width="1" height="1" fill="#003333" />
+  <rect x="6" y="5" width="1" height="1" fill="#003333" />
+  <rect x="13" y="1" width="1" height="1" fill="#003333" />
+  <rect x="13" y="0" width="1" height="1" fill="#003333" />
+  <rect x="14" y="0" width="1" height="1" fill="#003333" />
+  <rect x="15" y="1" width="1" height="1" fill="#003333" />
+  <rect x="15" y="2" width="1" height="1" fill="#003333" />
+  <rect x="14" y="3" width="1" height="1" fill="#003333" />
+
+  <!-- Cyan Highlights (#55ffff) -->
+  <rect x="12" y="2" width="1" height="1" fill="#55ffff" />
   <rect x="11" y="3" width="1" height="1" fill="#55ffff" />
   <rect x="10" y="3" width="1" height="1" fill="#55ffff" />
   <rect x="9" y="3" width="1" height="1" fill="#55ffff" />
   <rect x="8" y="4" width="1" height="1" fill="#55ffff" />
-  <rect x="7" y="5" width="1" height="1" fill="#33cccc" />
-  
-  <rect x="10" y="2" width="1" height="1" fill="#228888" />
-  <rect x="9" y="2" width="1" height="1" fill="#228888" />
-  <rect x="8" y="3" width="1" height="1" fill="#228888" />
-  <rect x="7" y="4" width="1" height="1" fill="#228888" />
-  <rect x="6" y="5" width="1" height="1" fill="#114444" />
-  
-  <rect x="11" y="4" width="1" height="1" fill="#114444" />
-  <rect x="10" y="4" width="1" height="1" fill="#114444" />
-  <rect x="9" y="4" width="1" height="1" fill="#114444" />
-  <rect x="8" y="5" width="1" height="1" fill="#114444" />
-  
-  <!-- Right wing -->
-  <rect x="12" y="1" width="1" height="1" fill="#55ffff" />
-  <rect x="13" y="1" width="1" height="1" fill="#228888" />
-  <rect x="14" y="1" width="1" height="1" fill="#114444" />
-  
+  <rect x="7" y="5" width="1" height="1" fill="#55ffff" />
+  <rect x="13" y="2" width="1" height="1" fill="#55ffff" />
+  <rect x="14" y="1" width="1" height="1" fill="#55ffff" />
   <rect x="14" y="2" width="1" height="1" fill="#55ffff" />
-  <rect x="14" y="3" width="1" height="1" fill="#55ffff" />
-  <rect x="15" y="3" width="1" height="1" fill="#114444" />
-  
-  <rect x="11" y="2" width="1" height="1" fill="#114444" />
+  <rect x="15" y="3" width="1" height="1" fill="#55ffff" />
+
+  <!-- Inner Dark Cyan/Shadow (#33cccc) -->
+  <rect x="11" y="1" width="1" height="1" fill="#33cccc" />
+  <rect x="12" y="1" width="1" height="1" fill="#33cccc" />
+  <rect x="13" y="3" width="1" height="1" fill="#33cccc" />
+  <rect x="13" y="4" width="1" height="1" fill="#33cccc" />
 </svg>
