@@ -1146,6 +1146,12 @@ async function handleCommand(cmdStr) {
                 return;
             }
 
+            if (segment === "hours") {
+                writeToChatHistory("[Server] Hệ thống ghi nhận lỗi: Lệnh truyền tin giải mã khóa 'hours' bị từ chối.", "error");
+                writeToChatHistory("[Server] Gợi ý: Hãy đóng bảng điều khiển chat lại và tự tay gõ từng nhịp rung động cơ học trực tiếp lên các phím bấm của thế giới này...", "warning");
+                return;
+            }
+
             if (parts.length < 3) {
                 writeToChatHistory("Cú pháp: /unlock <days|hours|minutes|seconds> <mã_arg>", "error");
                 return;
