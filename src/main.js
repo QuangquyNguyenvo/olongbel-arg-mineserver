@@ -171,10 +171,10 @@ async function sha256(message) {
 
 // Hashed ARG Secret Codes (SHA-256)
 const codes = {
-    days: "3e2fb24aa7cd8493f3da7a60a47498101af4384061b1c7a2e68c41d36bb7bfcd",    // MINECOW_START_2026
-    hours: "b538830b4c60cab60569c5a47e6e1733e69f745d2294b45414073d4f91c053c2",   // 35791320242832374042475054
-    minutes: "b1837379ef38b51bb60e44a2261965c025186b84c717fc88fa05ee22fb5ca735", // z3xwCzhplqk
-    seconds: "116f73eeef6adac652994dac9e263724caef13db12d120a0c7ada855245fb05d"  // 134789
+    days: "3e2fb24aa7cd8493f3da7a60a47498101af4384061b1c7a2e68c41d36bb7bfcd",
+    hours: "b538830b4c60cab60569c5a47e6e1733e69f745d2294b45414073d4f91c053c2",
+    minutes: "b1837379ef38b51bb60e44a2261965c025186b84c717fc88fa05ee22fb5ca735",
+    seconds: "116f73eeef6adac652994dac9e263724caef13db12d120a0c7ada855245fb05d"
 };
 
 // Unlock States (loaded from localStorage)
@@ -684,7 +684,7 @@ document.addEventListener("click", (e) => {
 });
 
 // Perform physical mining breaking animation on segment locks
-function animateSegmentBreak(segment) {
+function animateSegmentBreak(segment, code = "") {
     const cover = document.getElementById(`${segment}-cover`);
     if (!cover) return;
 
@@ -736,7 +736,7 @@ function animateSegmentBreak(segment) {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ segment })
+            body: JSON.stringify({ segment, code })
         }).catch(err => console.error("Failed to save unlock state to database:", err));
 
         const allSolved = unlockStates.hours && unlockStates.minutes && unlockStates.seconds;
@@ -1173,7 +1173,7 @@ async function handleCommand(cmdStr) {
             }
 
             if ((await sha256(inputCode)) === codes[segment]) {
-                animateSegmentBreak(segment);
+                animateSegmentBreak(segment, inputCode);
             } else {
                 writeToChatHistory("[Server] Sai mã bảo mật! Trực giác của bạn chưa đủ nhạy bén.", "error");
             }
@@ -1617,7 +1617,7 @@ document.addEventListener("keydown", (e) => {
                 }
                 triggerSecretButton();
                 if (!unlockStates.hours) {
-                    animateSegmentBreak("hours");
+                    animateSegmentBreak("hours", secretSequence);
                 }
             }
         } else {
@@ -1695,7 +1695,7 @@ function checkURLParams() {
             }
             unlockedAny = true;
             setTimeout(() => {
-                animateSegmentBreak(segment);
+                animateSegmentBreak(segment, paramVal);
             }, 100);
         }
     });
@@ -1815,3 +1815,28 @@ setInterval(syncDatabaseUnlockStates, 10000);
 // Random Splash text
 const splashTextEl = document.getElementById("splashText");
 splashTextEl.innerText = splashTexts[Math.floor(Math.random() * splashTexts.length)];
+
+// Anti-cheat warning in Console
+console.log(
+    "%c⚠️ CẢNH BÁO BẢO MẬT!",
+    "color: #ff5555; font-family: sans-serif; font-size: 2.5rem; font-weight: bold; text-shadow: 3px 3px 0px black;"
+);
+console.log(
+    "%cMọi hành vi xâm nhập, bypass hoặc tự động gửi gói tin qua Console/DevTools đều bị chặn bởi hệ thống bảo vệ. Hãy giải mật mã một cách trung thực!",
+    "color: #ffff55; font-family: sans-serif; font-size: 1.1rem; font-weight: bold; background-color: #222; padding: 6px; border: 2px solid #555;"
+);
+
+// Anti-cheat: Disable right-click context menu
+document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+// Anti-cheat: Block F12 and common Inspect shortcuts
+document.addEventListener("keydown", (e) => {
+    if (
+        e.key === "F12" ||
+        (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "i" || e.key === "J" || e.key === "j")) ||
+        (e.ctrlKey && (e.key === "U" || e.key === "u"))
+    ) {
+        e.preventDefault();
+        writeToChatHistory("[Hệ thống] Phát hiện hành động đáng ngờ! Lớp bảo mật đã ngăn cản việc mở bảng điều khiển DevTools.", "error");
+    }
+});
