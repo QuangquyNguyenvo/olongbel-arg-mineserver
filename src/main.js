@@ -812,6 +812,9 @@ Cánh cổng dẫn tới thế giới sinh tồn cực hạn đã chính thức 
   ✦ Phiên bản: \`26.2 Fabric\`
   *(Khuyến khích cài đặt để trải nghiệm tính năng Voice Chat trực tiếp cực đỉnh trong game!)*
 
+📦 **MOD**
+  ✦ Đường dẫn: https://drive.google.com/file/d/1ajGOEs5I3ZGFEaI7_r9YDK0A7DqlrdTE/view?usp=sharing
+
 🌏 **MÁY CHỦ VẬT LÝ**
   ✦ Vị trí: Hồ Chí Minh City (Băng thông cao, ping cực mượt ~5ms)
 
@@ -872,6 +875,9 @@ Cánh cổng dẫn tới thế giới sinh tồn cực hạn đã chính thức 
 🛠️ **PHIÊN BẢN HỖ TRỢ**
   ✦ Phiên bản: \`26.2 Fabric\`
   *(Khuyến khích cài đặt để trải nghiệm tính năng Voice Chat trực tiếp cực đỉnh trong game!)*
+
+📦 **MOD**
+  ✦ Đường dẫn: https://drive.google.com/file/d/1ajGOEs5I3ZGFEaI7_r9YDK0A7DqlrdTE/view?usp=sharing
 
 🌏 **MÁY CHỦ VẬT LÝ**
   ✦ Vị trí: Hồ Chí Minh City (Băng thông cao, ping cực mượt ~5ms)
